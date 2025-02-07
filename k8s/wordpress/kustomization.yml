@@ -1,5 +1,0 @@
-resources:
-  - virtual-service.yml
-  - destination-rule.yml
-  - mysql-deployment.yml
-  - wordpress-deployment.yml

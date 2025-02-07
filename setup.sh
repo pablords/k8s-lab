@@ -39,11 +39,10 @@ minikube dashboard &
 
 # 5️⃣ Instalar Istio
 echo "🛠 Instalando Istio..."
-# cd tools/istio-1.24.2
-# export PATH=$PWD/bin:$PATH
+ISTIO_VERSION="1.24.2"  # Defina a versão desejada
+curl -L https://istio.io/downloadIstio | sh -
 export PATH=$PWD/istio-$ISTIO_VERSION/bin:$PATH
 istioctl install --set profile=demo -y
-cd ../../
 
 # 6️⃣ Verificar se o Ingress Gateway pegou um EXTERNAL-IP
 echo "🔍 Verificando EXTERNAL-IP do Istio Ingress Gateway..."
@@ -64,6 +63,11 @@ kubectl apply -f k8s/nginx/virtual-service.yml
 kubectl apply -f k8s/nginx/destination-rule.yml
 
 echo "📦 Implantando Wordpress..."
-kubectl apply -f k8s/wordpress/kustomization.yml
+kubectl apply -f k8s/wordpress/mysql-deployment.yml
+kubectl apply -f k8s/wordpress/wordpress-deployment.yml
+kubectl apply -f k8s/wordpress/virtual-service.yml
+kubectl apply -f k8s/wordpress/destination-rule.yml
 
-echo "🎉 Configuração concluída! Teste o acesso via: http://$(minikube ip)/frontend/nginx"
+EXTERNAL_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+echo "🎉 Configuração concluída! Teste o acesso via: http://$EXTERNAL_IP/frontend/nginx"
