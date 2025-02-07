@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: ingress-gateway
+  namespace: istio-system  # O Gateway precisa estar no namespace do Istio
+spec:
+  selector:
+    istio: ingressgateway  # Garante que esse Gateway seja aplicado ao Istio Ingress Gateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"  # Aceita tráfego de qualquer domínio/IP

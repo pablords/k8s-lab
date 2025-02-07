@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: wordpress
+  namespace: frontend
+spec:
+  hosts:
+  - "*"  # Permite qualquer host (192.168.49.240)
+  gateways:
+  - istio-system/ingress-gateway  # Referência ao Gateway criado acima
+  http:
+  - match:
+    - uri:
+        prefix: /frontend/wordpress
+    rewrite:
+      uri: "/"  # Remove o prefixo antes de encaminhar para o serviço interno
+    route:
+    - destination:
+        host: wordpress.frontend.svc.cluster.local  # Nome completo do serviço no namespace frontend
+        port:
+          number: 80

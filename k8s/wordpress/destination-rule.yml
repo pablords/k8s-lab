@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: wordpress
+  namespace: frontend
+spec:
+  host: wordpress.frontend.svc.cluster.local  # Nome completo do serviço
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
