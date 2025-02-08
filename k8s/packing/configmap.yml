@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: packing-envs
+  namespace: backend
+data:
+  application.yml: |
+    spring:
+      main:
+        allow-bean-definition-overriding: true
+      profiles:
+        active: prod
+      doc:
+        api-docs:
+          path: /api-docs
+        swagger-ui:
+          path: /swagger-ui.html
+    server:
+      servlet:
+        context-path: /api  # O Spring Boot servirá tudo dentro de /api
+    app:
+      name: parking-hexagonal-java
+    datasource:
+      url: jdbc:mysql://mysql:3306/parking
+      username: parking
+      password: parking
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.MySQLDialect

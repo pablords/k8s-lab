@@ -2,11 +2,19 @@
 
 set -e  # Para encerrar em caso de erro
 
+NODES=2
+CPUS=4
+MEMORY=10000
+DISK=10G
+DRIVER=docker
+K8S_VERSION=v1.28.3
+
 echo "🚀 Iniciando configuração do cluster Kubernetes com Minikube..."
+echo "nodes: $NODES, cpus: $CPUS, memory: $MEMORY, disk: $DISK, driver: $DRIVER, k8s_version: $K8S_VERSION"
 
 # 1️⃣ Iniciar o Minikube com 4 nós, CPUs e memória configuradas
 echo "🔥 Iniciando Minikube..."
-minikube start --nodes=4 --cpus=4 --memory=8000 --disk-size=5g --driver=docker --kubernetes-version=v1.28.3
+minikube start --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION
 
 # 2️⃣ Habilitar o MetalLB
 echo "✅ Habilitando MetalLB..."
@@ -62,12 +70,22 @@ kubectl apply -f k8s/nginx/deployment.yml
 kubectl apply -f k8s/nginx/virtual-service.yml
 kubectl apply -f k8s/nginx/destination-rule.yml
 
-echo "📦 Implantando Wordpress..."
-kubectl apply -f k8s/wordpress/mysql-deployment.yml
-kubectl apply -f k8s/wordpress/wordpress-deployment.yml
-kubectl apply -f k8s/wordpress/virtual-service.yml
-kubectl apply -f k8s/wordpress/destination-rule.yml
+echo "📦 Implantando packing..."
+kubectl apply -f k8s/db/mysql-configmap.yml
+kubectl apply -f k8s/db/mysql-deployment.yml
+kubectl apply -f k8s/packing/configmap.yml
+kubectl apply -f k8s/packing/deployment.yml
+kubectl apply -f k8s/packing/virtual-service.yml
+kubectl apply -f k8s/packing/destination-rule.yml
 
-EXTERNAL_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+EXTERNAL_IP=""
+
+# Aguarda até que o External IP seja atribuído pelo MetalLB
+while [ -z "$EXTERNAL_IP" ]; do
+  echo "⏳ Aguardando MetalLB atribuir um External IP..."
+  sleep 5
+  EXTERNAL_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+done
 
 echo "🎉 Configuração concluída! Teste o acesso via: http://$EXTERNAL_IP/frontend/nginx"
+

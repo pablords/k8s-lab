@@ -1,10 +1,10 @@
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
-  name: wordpress
-  namespace: frontend
+  name: packing
+  namespace: backend
 spec:
-  host: wordpress.frontend.svc.cluster.local  # Nome completo do serviço
+  host: packing.backend.svc.cluster.local  # Nome completo do serviço
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN

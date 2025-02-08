@@ -79,3 +79,19 @@ Verifique os serviços instalados:
 bash
 kubectl get svc -n monitoring
 
+
+3️⃣ Testar o acesso ao WordPress:
+
+curl -v http://$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/wordpress/wp-admin/install.php
+
+
+Tshoot istio
+
+kubectl get virtualservice -A
+kubectl get svc -A
+istioctl proxy-config routes deploy/istio-ingressgateway -n istio-system
+kubectl logs -l istio=ingressgateway -n istio-system --tail=100
+kubectl rollout restart deployment istio-ingressgateway -n istio-system
+kubectl rollout restart deployment packing -n backend
+
+export PATH=$PWD/bin:$PATH

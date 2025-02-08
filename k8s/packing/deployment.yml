@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: packing
+  namespace: backend
+  labels:
+    app: packing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: packing
+  template:
+    metadata:
+      labels:
+        app: packing
+    spec:
+      containers:
+      - name: packing
+        image: pablords/parking:0.0.1-SNAPSHOT
+        command: [ "java", "-jar", "app.jar", "--spring.config.location=file:/app/config/application.yml" ]
+        env: 
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config/  # Diretório onde o application.yml será montado
+      volumes:
+      - name: config-volume
+        configMap:
+          name: packing-envs # Nome do ConfigMap
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: packing
+  namespace: backend
+spec:
+  selector:
+    app: packing
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
