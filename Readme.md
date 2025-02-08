@@ -92,6 +92,39 @@ kubectl get svc -A
 istioctl proxy-config routes deploy/istio-ingressgateway -n istio-system
 kubectl logs -l istio=ingressgateway -n istio-system --tail=100
 kubectl rollout restart deployment istio-ingressgateway -n istio-system
-kubectl rollout restart deployment packing -n backend
+kubectl rollout restart deployment parking -n backend
 
 export PATH=$PWD/bin:$PATH
+
+
+curl -X POST http://localhost:8080/api/checkins \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "plate": "HPP7156",
+  "brand": "LAMBORGHINI",
+  "color": "azul",
+  "model": "Gallardo Spider LP560-4"
+}'
+
+
+kubectl exec -it parking-7bbd74c997-lcscw -n backend -- curl -X POST http://parking.backend.svc.cluster.local:8080/api/checkins \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "plate": "HPP7156",
+  "brand": "LAMBORGHINI",
+  "color": "azul",
+  "model": "Gallardo Spider LP560-4"
+}'
+
+
+curl -X POST http://192.168.49.200/backend/parking/api/checkins \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "plate": "HPP7156",
+  "brand": "LAMBORGHINI",
+  "color": "azul",
+  "model": "Gallardo Spider LP560-4"
+}'

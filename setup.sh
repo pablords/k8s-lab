@@ -70,13 +70,13 @@ kubectl apply -f k8s/nginx/deployment.yml
 kubectl apply -f k8s/nginx/virtual-service.yml
 kubectl apply -f k8s/nginx/destination-rule.yml
 
-echo "📦 Implantando packing..."
+echo "📦 Implantando parking..."
 kubectl apply -f k8s/db/mysql-configmap.yml
 kubectl apply -f k8s/db/mysql-deployment.yml
-kubectl apply -f k8s/packing/configmap.yml
-kubectl apply -f k8s/packing/deployment.yml
-kubectl apply -f k8s/packing/virtual-service.yml
-kubectl apply -f k8s/packing/destination-rule.yml
+kubectl apply -f k8s/parking/configmap.yml
+kubectl apply -f k8s/parking/deployment.yml
+kubectl apply -f k8s/parking/virtual-service.yml
+kubectl apply -f k8s/parking/destination-rule.yml
 
 EXTERNAL_IP=""
 

@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: packing
+  name: parking
   namespace: backend
   labels:
-    app: packing
+    app: parking
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: packing
+      app: parking
   template:
     metadata:
       labels:
-        app: packing
+        app: parking
     spec:
       containers:
-      - name: packing
+      - name: parking
         image: pablords/parking:0.0.1-SNAPSHOT
         command: [ "java", "-jar", "app.jar", "--spring.config.location=file:/app/config/application.yml" ]
         env: 
@@ -30,18 +30,17 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: packing-envs # Nome do ConfigMap
-
+          name: parking-envs # Nome do ConfigMap
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: packing
+  name: parking
   namespace: backend
 spec:
   selector:
-    app: packing
+    app: parking
   ports:
   - protocol: TCP
     port: 8080

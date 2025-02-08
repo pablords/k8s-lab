@@ -1,10 +1,10 @@
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
-  name: packing
+  name: parking
   namespace: backend
 spec:
-  host: packing.backend.svc.cluster.local  # Nome completo do serviço
+  host: parking.backend.svc.cluster.local  # Nome completo do serviço
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN

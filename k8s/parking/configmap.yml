@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: parking-envs
+  namespace: backend
+data:
+  application.yml: |
+    spring:
+      main:
+        allow-bean-definition-overriding: true
+      profiles:
+        active: prod
+    server:
+      servlet:
+        context-path: /api  # O Spring Boot servirá tudo dentro de /api
+    app:
+      name: parking-hexagonal-java
+    datasource:
+      url: jdbc:mysql://mysql:3306/parking
+      username: parking
+      password: parking
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.MySQLDialect
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: "*"  # Expõe todos os endpoints do Actuator
+      endpoint:
+        mappings:
+          enabled: true  # Garante que o endpoint de mapeamento seja ativado
+    springdoc:
+      api-docs:
+        path: /docs  # <-- Novo caminho para OpenAPI
+      swagger-ui:
+        path: /swagger-ui.html  # <-- Novo caminho para o Swagger UI
+        urls:
+          - name: "Parking API"
+            url: "/backend/parking/api/docs"  # Corrige o caminho para o OpenAPI JSON
+        config-url: /backend/parking/api/docs  
+        disable-swagger-default-url: true 
