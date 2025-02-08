@@ -70,9 +70,15 @@ kubectl apply -f k8s/nginx/deployment.yml
 kubectl apply -f k8s/nginx/virtual-service.yml
 kubectl apply -f k8s/nginx/destination-rule.yml
 
-echo "📦 Implantando parking..."
+echo "📦 Implantando messaging..."
+kubectl apply -f k8s/messaging/deployment.yml
+kubectl apply -f k8s/messaging/virtual-service.yml
+
+echo "📦 Implantando db..."
 kubectl apply -f k8s/db/mysql-configmap.yml
 kubectl apply -f k8s/db/mysql-deployment.yml
+
+echo "📦 Implantando parking..."
 kubectl apply -f k8s/parking/configmap.yml
 kubectl apply -f k8s/parking/deployment.yml
 kubectl apply -f k8s/parking/virtual-service.yml

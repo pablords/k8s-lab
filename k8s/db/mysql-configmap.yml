@@ -6,6 +6,10 @@ metadata:
 data:
   init.sql: |
     CREATE DATABASE IF NOT EXISTS parking;
+    DROP USER IF EXISTS 'parking'@'%';
+    CREATE USER 'parking'@'%' IDENTIFIED BY 'parking';
+    GRANT ALL PRIVILEGES ON parking.* TO 'parking'@'%';
+    FLUSH PRIVILEGES;
 
     USE parking;
     

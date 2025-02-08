@@ -1,8 +1,8 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: nginx
-  namespace: frontend
+  name: rabbitmq
+  namespace: backend
 spec:
   hosts:
   - "lab.com.br"  # Permite qualquer host (192.168.49.240)
@@ -11,11 +11,11 @@ spec:
   http:
   - match:
     - uri:
-        prefix: /frontend/nginx
+        prefix: /backend/rabbitmq/
     rewrite:
       uri: "/"  # Remove o prefixo antes de encaminhar para o serviço interno
     route:
     - destination:
-        host: nginx.frontend.svc.cluster.local  # Nome completo do serviço no namespace frontend
+        host: rabbitmq.backend.svc.cluster.local  # Nome completo do serviço no namespace frontend
         port:
-          number: 80
+          number: 15672

@@ -119,7 +119,7 @@ kubectl exec -it parking-7bbd74c997-lcscw -n backend -- curl -X POST http://park
 }'
 
 
-curl -X POST http://192.168.49.200/backend/parking/api/checkins \
+curl -X POST http://lab.com.br/backend/parking/api/checkins \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

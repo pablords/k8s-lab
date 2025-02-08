@@ -10,21 +10,27 @@ data:
         allow-bean-definition-overriding: true
       profiles:
         active: prod
+      datasource:
+        url: jdbc:mysql://mysql.backend.svc.cluster.local:3306/parking
+        username: parking
+        password: parking
+      jpa:
+        hibernate:
+          ddl-auto: update
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.MySQLDialect
+      rabbitmq:
+        host: rabbitmq.backend.svc.cluster.local # Nome do Service no cluster
+        port: 5672
+        username: admin
+        password: admin
+
     server:
       servlet:
-        context-path: /api  # O Spring Boot servirá tudo dentro de /api
+        context-path: /backend/parking/api # O Spring Boot servirá tudo dentro de /api
     app:
       name: parking-hexagonal-java
-    datasource:
-      url: jdbc:mysql://mysql:3306/parking
-      username: parking
-      password: parking
-    jpa:
-      hibernate:
-        ddl-auto: validate
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.MySQLDialect
     management:
       endpoints:
         web:
