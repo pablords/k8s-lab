@@ -128,3 +128,6 @@ curl -X POST http://lab.com.br/backend/parking/api/checkins \
   "color": "azul",
   "model": "Gallardo Spider LP560-4"
 }'
+
+
+
