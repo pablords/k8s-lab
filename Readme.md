@@ -1,133 +1,181 @@
-# k8s-labs
+# k8s-lab - Cluster Kubernetes com Minikube, MetalLB, Istio, Argo CD e Argo Rollouts
 
-### Start
+Este repositório contém um script automatizado para configurar um cluster Kubernetes local utilizando Minikube, MetalLB, Istio, Argo CD e Argo Rollouts.
 
-minikube start --nodes=4 --cpus=2 --memory=4048 --disk-size=5g --driver=docker --kubernetes-version=v1.28.3
+## 🚀 Funcionalidades
 
-### Usando MetalLB (Load Balancer Local)
-minikube addons list
+- **Criação de cluster Kubernetes** com Minikube
+- **Habilitação do MetalLB** para Load Balancer
+- **Instalação do Istio** e configuração do Gateway
+- **Implantação de serviços essenciais** como banco de dados e mensageria
+- **Configuração do Argo CD** para gerenciamento de aplicações com GitOps
+- **Instalação do Argo Rollouts** para deploys progressivos e Canary Deploy
+- **Geração automática do IP externo do ambiente**
+
+---
+
+## 🔥 Iniciando a Configuração
+
+### **1️⃣ Executar o Script**
+Execute o script para iniciar a configuração completa do ambiente:
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+O script fará todas as configurações automaticamente.
+
+---
+
+## 🛠 O que o Script Faz?
+
+### **1️⃣ Iniciar o Cluster Kubernetes com Minikube**
+O Minikube será iniciado com **2 nós, 4 CPUs, 10GB de memória e 10GB de disco**:
+```bash
+minikube start --nodes=2 --cpus=4 --memory=10000 --disk-size=10G --driver=docker --kubernetes-version=v1.28.3
+```
+
+### **2️⃣ Habilitar o MetalLB**
+Habilita o **MetalLB** para LoadBalancer no cluster:
+```bash
 minikube addons enable metallb
+```
 
-#### configure configmap MetalLB
-minikube ip
+Define um intervalo de IPs baseado no IP do Minikube:
+```yaml
+address-pools:
+- name: default
+  protocol: layer2
+  addresses:
+  - 192.168.49.200-192.168.49.210
+```
 
-cd k8s/config/metallb
-
-aplique o configmap no namespace do mteallb-system
-
-Se o Minikube usa 192.168.49.0/24, experimente intervalos como:
-192.168.49.200-192.168.49.210
-192.168.49.50-192.168.49.60
-
-### Dashboard
-
-minikube dashboard
-
-### Entre no diretório do Istio (o nome varia conforme a versão baixada, ex.: istio-1.18.0):
-
-cd tools/istio-1.24.2
-export PATH=$PWD/bin:$PATH
-
-#### Use o comando a seguir para instalar o Istio com a configuração padrão:
+### **3️⃣ Instalar o Istio**
+Baixa e instala o Istio **versão 1.24.2**:
+```bash
+curl -L https://istio.io/downloadIstio | sh -
+export PATH=$PWD/istio-1.24.2/bin:$PATH
 istioctl install --set profile=demo -y
+```
 
-Isso instalará:
-
-Control Plane: Os componentes principais do Istio.
-Ingress Gateway: Um gateway padrão para gerenciar o tráfego externo.
-
-Valide se o istio-ingressgateway pegou o EXTERNAL-IP
-
+Verifica se o **Ingress Gateway** pegou um **External IP**:
+```bash
 kubectl get svc -n istio-system istio-ingressgateway
+```
 
-#### Crie os namespaces
-cd k8s/config
-kubectl apply -f namespaces.yml
+### **4️⃣ Criar Namespaces e Aplicar Configuração do Istio Gateway**
+```bash
+kubectl apply -f k8s/config/namespaces.yml
+kubectl apply -f k8s/config/istio/gateway.yml
+```
 
+### **5️⃣ Implantar os Serviços no Cluster**
 
-### Aplique a config do gateway
+#### 🔹 Implantação do **Banco de Dados**:
+```bash
+kubectl apply -f k8s/db/mysql-configmap.yml
+kubectl apply -f k8s/db/mysql-deployment.yml
+```
 
-cd k8/config
+#### 🔹 Implantação da **Mensageria (RabbitMQ)**:
+```bash
+kubectl apply -f k8s/messaging/deployment.yml
+kubectl apply -f k8s/messaging/virtual-service.yml
+```
 
-kubectl apply -f ingress.yml
+#### 🔹 Implantação do **Backend (Parking Service)**:
+```bash
+kubectl apply -f k8s/parking/configmap.yml
+kubectl apply -f k8s/parking/deployment.yml
+kubectl apply -f k8s/parking/virtual-service.yml
+kubectl apply -f k8s/parking/destination-rule.yml
+```
 
-#### Aplique os manifestos nginx para teste:
-cd k8s/nginx
-kubectl apply deployment.yml
-kubectl apply virtual-service.yml
-kubectl apply destination-rule.yml
+### **6️⃣ Instalar e Configurar o Argo CD**
 
-#### Use o dashboard do Istio para monitorar o tráfego:
-istioctl dashboard kiali
+#### 🔹 Criar o Namespace do Argo CD e instalar com Helm:
+```bash
+kubectl create namespace argocd
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update
+helm install argocd argo/argo-cd --namespace argocd
+```
 
+#### 🔹 Alterar o Service do ArgoCD para LoadBalancer:
+```bash
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+```
 
-### Ferramentas de monitoramento adicionais: Instale ferramentas como Prometheus e Grafana usando Helm:
+### **7️⃣ Instalar o Argo Rollouts**
 
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm install prometheus prometheus-community/kube-prometheus-stack
+Criar o namespace e instalar com Helm:
+```bash
+kubectl create namespace argo-rollouts
+helm install argo-rollouts argo/argo-rollouts --namespace argo-rollouts
+```
 
-Essa instalação inclui:
+Habilitar suporte ao **Argo Rollouts no Argo CD**:
+```bash
+kubectl patch configmap/argocd-cm -n argocd --type merge -p '{"data": {"resource.customizations.health.argoproj.io_Rollout": "# Health check for Argo Rollouts\nhs = {} hs.status = \"Healthy\" if obj.status and obj.status.readyReplicas == obj.status.replicas else \"Progressing\"\nhs"}}'
+```
 
-Prometheus: Coleta métricas do cluster.
-Grafana: Exibe as métricas em dashboards pré-configurados.
-Alertmanager: Gerencia alertas.
-Node Exporter: Coleta métricas dos nós do cluster.
+Reiniciar o **Argo CD** para aplicar as mudanças:
+```bash
+kubectl rollout restart deployment argocd-server -n argocd
+```
 
-Passo 1: Obtenha o IP Externo ou Porta do Grafana
-Verifique os serviços instalados:
+### **8️⃣ Recuperar Credenciais do Argo CD**
 
-bash
-kubectl get svc -n monitoring
+O Argo CD gera um **password inicial** para login. Para recuperá-lo:
+```bash
+ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
+echo "Senha do ArgoCD: $ARGOCD_PASSWORD"
+```
 
+### **9️⃣ Recuperar External IP do Cluster**
 
-3️⃣ Testar o acesso ao WordPress:
+O script aguarda até que o **MetalLB** atribua um External IP:
+```bash
+while [ -z "$EXTERNAL_IP" ]; do
+  echo "⏳ Aguardando MetalLB atribuir um External IP..."
+  sleep 5
+  EXTERNAL_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+done
+echo "O External IP é: $EXTERNAL_IP"
+```
 
-curl -v http://$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/wordpress/wp-admin/install.php
+---
 
+## ✅ **Acessando os Serviços**
 
-Tshoot istio
+### **📌 Acessar o Argo CD**
+Após a instalação, o Argo CD estará disponível em:
+```
+http://$ARGOCD_EXTERNAL_IP
+```
+Usuário: **admin**
+Senha: **$ARGOCD_PASSWORD**
 
-kubectl get virtualservice -A
-kubectl get svc -A
-istioctl proxy-config routes deploy/istio-ingressgateway -n istio-system
-kubectl logs -l istio=ingressgateway -n istio-system --tail=100
-kubectl rollout restart deployment istio-ingressgateway -n istio-system
-kubectl rollout restart deployment parking -n backend
+### **📌 Acessar o Ambiente**
+A aplicação pode ser acessada via:
+```
+http://$EXTERNAL_IP/frontend/nginx
+```
 
-export PATH=$PWD/bin:$PATH
+Se estiver usando Minikube, adicione ao `/etc/hosts`:
+```bash
+echo "$EXTERNAL_IP frontend.example.com" | sudo tee -a /etc/hosts
+```
 
+Agora você pode acessar:
+```
+http://frontend.example.com
+```
 
-curl -X POST http://localhost:8080/api/checkins \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "plate": "HPP7156",
-  "brand": "LAMBORGHINI",
-  "color": "azul",
-  "model": "Gallardo Spider LP560-4"
-}'
+---
 
+## 🎯 **Conclusão**
+Este script configura automaticamente um ambiente Kubernetes com **Minikube, MetalLB, Istio, Argo CD e Argo Rollouts**, permitindo que você **implante e gerencie aplicações de maneira automatizada e escalável**.
 
-kubectl exec -it parking-7bbd74c997-lcscw -n backend -- curl -X POST http://parking.backend.svc.cluster.local:8080/api/checkins \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "plate": "HPP7156",
-  "brand": "LAMBORGHINI",
-  "color": "azul",
-  "model": "Gallardo Spider LP560-4"
-}'
-
-
-curl -X POST http://lab.com.br/backend/parking/api/checkins \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "plate": "HPP7156",
-  "brand": "LAMBORGHINI",
-  "color": "azul",
-  "model": "Gallardo Spider LP560-4"
-}'
-
-
+Agora seu ambiente está **pronto para deploys automatizados com GitOps e rollouts progressivos!** 🚀🔥
 
