@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysql-init-scripts
-  namespace: backend
+  namespace: data
 data:
   init.sql: |
     CREATE DATABASE IF NOT EXISTS parking;

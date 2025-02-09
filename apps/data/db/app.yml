@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: db
+  namespace: argocd
+spec:
+  project: db
+  source:
+    repoURL: "https://github.com/pablords/k8s-lab.git"  # 🔥 Substituir pelo repositório correto
+    targetRevision: master
+    path: apps/data/db  # 🔥 Define qual pasta será sincronizada
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

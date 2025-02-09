@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: frontend-app
+  name: messaging
   namespace: argocd
 spec:
-  project: default
+  project: messaging
   source:
     repoURL: "https://github.com/pablords/k8s-lab.git"  # 🔥 Substituir pelo repositório correto
     targetRevision: master
-    path: apps/frontend  # 🔥 Define qual pasta será sincronizada
+    path: apps/data/messaging  # 🔥 Define qual pasta será sincronizada
   destination:
     server: https://kubernetes.default.svc
-    namespace: frontend
+    namespace: data
   syncPolicy:
     automated:
       prune: true
