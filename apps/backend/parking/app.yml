@@ -4,7 +4,7 @@ metadata:
   name: parking-app
   namespace: argocd
 spec:
-  project: parking
+  project: default
   source:
     repoURL: "https://github.com/pablords/k8s-lab.git"  # 🔥 Substituir pelo repositório correto
     targetRevision: master
