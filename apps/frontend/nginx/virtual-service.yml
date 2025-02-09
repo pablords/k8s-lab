@@ -16,6 +16,7 @@ spec:
       uri: "/"  # Remove o prefixo antes de encaminhar para o serviço interno
     route:
     - destination:
-        host: nginx.frontend.svc.cluster.local  # Nome completo do serviço no namespace frontend
+        host: nginx-stable
         port:
           number: 80
+      weight: 100
