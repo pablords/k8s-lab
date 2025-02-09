@@ -1,181 +1,205 @@
-# k8s-lab - Cluster Kubernetes com Minikube, MetalLB, Istio, Argo CD e Argo Rollouts
+# k8s-lab
 
-Este repositório contém um script automatizado para configurar um cluster Kubernetes local utilizando Minikube, MetalLB, Istio, Argo CD e Argo Rollouts.
+Este repositório contém um ambiente Kubernetes completo utilizando **Minikube**, **MetalLB**, **Istio**, **Argo CD** e **Argo Rollouts** para gerenciamento e implantação progressiva de aplicações.
 
-## 🚀 Funcionalidades
+## 🚀 Configuração Automática do Cluster
 
-- **Criação de cluster Kubernetes** com Minikube
-- **Habilitação do MetalLB** para Load Balancer
-- **Instalação do Istio** e configuração do Gateway
-- **Implantação de serviços essenciais** como banco de dados e mensageria
-- **Configuração do Argo CD** para gerenciamento de aplicações com GitOps
-- **Instalação do Argo Rollouts** para deploys progressivos e Canary Deploy
-- **Geração automática do IP externo do ambiente**
+Para configurar todo o ambiente automaticamente, execute:
 
----
-
-## 🔥 Iniciando a Configuração
-
-### **1️⃣ Executar o Script**
-Execute o script para iniciar a configuração completa do ambiente:
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
-O script fará todas as configurações automaticamente.
+O script **setup.sh** irá configurar todo o cluster Kubernetes, incluindo MetalLB, Istio, Argo CD e Argo Rollouts.
 
 ---
 
-## 🛠 O que o Script Faz?
+## 📌 Tecnologias Utilizadas
 
-### **1️⃣ Iniciar o Cluster Kubernetes com Minikube**
-O Minikube será iniciado com **2 nós, 4 CPUs, 10GB de memória e 10GB de disco**:
+- **Minikube** - Cria e gerencia um cluster Kubernetes local.
+- **MetalLB** - Load Balancer para Kubernetes local.
+- **Istio** - Service Mesh para controle de tráfego e segurança.
+- **Argo CD** - Gerenciamento de implantação GitOps.
+- **Argo Rollouts** - Estratégias avançadas de rollout para Kubernetes.
+
+---
+
+## 🔥 Etapas do Setup
+
+### 1️⃣ Iniciar Minikube
+
+O cluster Kubernetes é iniciado com **2 nós**, **4 CPUs**, **10GB de Memória** e **10GB de disco**:
+
 ```bash
 minikube start --nodes=2 --cpus=4 --memory=10000 --disk-size=10G --driver=docker --kubernetes-version=v1.28.3
 ```
 
-### **2️⃣ Habilitar o MetalLB**
-Habilita o **MetalLB** para LoadBalancer no cluster:
+### 2️⃣ Habilitar MetalLB
+
+MetalLB é ativado para fornecer suporte a LoadBalancer:
+
 ```bash
 minikube addons enable metallb
 ```
 
-Define um intervalo de IPs baseado no IP do Minikube:
-```yaml
-address-pools:
-- name: default
-  protocol: layer2
-  addresses:
-  - 192.168.49.200-192.168.49.210
-```
+O **intervalo de IPs** é configurado dinamicamente com base no IP do Minikube.
 
-### **3️⃣ Instalar o Istio**
-Baixa e instala o Istio **versão 1.24.2**:
+### 3️⃣ Instalar Istio
+
+Baixa e instala o Istio no cluster:
+
 ```bash
 curl -L https://istio.io/downloadIstio | sh -
 export PATH=$PWD/istio-1.24.2/bin:$PATH
 istioctl install --set profile=demo -y
 ```
 
-Verifica se o **Ingress Gateway** pegou um **External IP**:
-```bash
-kubectl get svc -n istio-system istio-ingressgateway
-```
+O **Istio Gateway** é configurado para rotear tráfego:
 
-### **4️⃣ Criar Namespaces e Aplicar Configuração do Istio Gateway**
 ```bash
-kubectl apply -f k8s/config/namespaces.yml
 kubectl apply -f k8s/config/istio/gateway.yml
 ```
 
-### **5️⃣ Implantar os Serviços no Cluster**
+### 4️⃣ Instalar Argo CD
 
-#### 🔹 Implantação do **Banco de Dados**:
-```bash
-kubectl apply -f k8s/db/mysql-configmap.yml
-kubectl apply -f k8s/db/mysql-deployment.yml
-```
+Instalação do Argo CD para gerenciamento de implantações:
 
-#### 🔹 Implantação da **Mensageria (RabbitMQ)**:
-```bash
-kubectl apply -f k8s/messaging/deployment.yml
-kubectl apply -f k8s/messaging/virtual-service.yml
-```
-
-#### 🔹 Implantação do **Backend (Parking Service)**:
-```bash
-kubectl apply -f k8s/parking/configmap.yml
-kubectl apply -f k8s/parking/deployment.yml
-kubectl apply -f k8s/parking/virtual-service.yml
-kubectl apply -f k8s/parking/destination-rule.yml
-```
-
-### **6️⃣ Instalar e Configurar o Argo CD**
-
-#### 🔹 Criar o Namespace do Argo CD e instalar com Helm:
 ```bash
 kubectl create namespace argocd
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 helm install argocd argo/argo-cd --namespace argocd
-```
-
-#### 🔹 Alterar o Service do ArgoCD para LoadBalancer:
-```bash
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
 ```
 
-### **7️⃣ Instalar o Argo Rollouts**
+A senha padrão do ArgoCD pode ser obtida com:
 
-Criar o namespace e instalar com Helm:
+```bash
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
+```
+
+### 5️⃣ Instalar Argo Rollouts
+
+Adiciona suporte a implantações canary e blue-green:
+
 ```bash
 kubectl create namespace argo-rollouts
 helm install argo-rollouts argo/argo-rollouts --namespace argo-rollouts
+kubectl apply -f k8s/argo-rollouts/service.yml
+kubectl apply -f k8s/argo-rollouts/vs.yml
 ```
 
-Habilitar suporte ao **Argo Rollouts no Argo CD**:
+**Configuração do health check do Argo CD para Rollouts:**
+
 ```bash
-kubectl patch configmap/argocd-cm -n argocd --type merge -p '{"data": {"resource.customizations.health.argoproj.io_Rollout": "# Health check for Argo Rollouts\nhs = {} hs.status = \"Healthy\" if obj.status and obj.status.readyReplicas == obj.status.replicas else \"Progressing\"\nhs"}}'
+kubectl patch configmap argocd-cm -n argocd --type merge -p '{"data": {"resource.customizations.health.argoproj.io_Rollout": "# Health check for Argo Rollouts\nhs = {} hs.status = \"Healthy\" if obj.status and obj.status.readyReplicas == obj.status.replicas else \"Progressing\"\nhs"}}'
 ```
 
-Reiniciar o **Argo CD** para aplicar as mudanças:
+**Reinicie o servidor do Argo CD para aplicar as configurações:**
+
 ```bash
 kubectl rollout restart deployment argocd-server -n argocd
 ```
 
-### **8️⃣ Recuperar Credenciais do Argo CD**
+### 6️⃣ Implantar Aplicativos via Argo CD
 
-O Argo CD gera um **password inicial** para login. Para recuperá-lo:
+As aplicações backend, banco de dados e frontend são implantadas automaticamente via Argo CD:
+
 ```bash
-ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
-echo "Senha do ArgoCD: $ARGOCD_PASSWORD"
-```
-
-### **9️⃣ Recuperar External IP do Cluster**
-
-O script aguarda até que o **MetalLB** atribua um External IP:
-```bash
-while [ -z "$EXTERNAL_IP" ]; do
-  echo "⏳ Aguardando MetalLB atribuir um External IP..."
-  sleep 5
-  EXTERNAL_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-done
-echo "O External IP é: $EXTERNAL_IP"
+kubectl apply -f apps/backend/parking/app.yml
+kubectl apply -f apps/data/db/app.yml
+kubectl apply -f apps/data/messaging/app.yml
+kubectl apply -f apps/frontend/nginx/app.yml
 ```
 
 ---
 
-## ✅ **Acessando os Serviços**
+## 🎯 **Acessando o Ambiente**
 
-### **📌 Acessar o Argo CD**
-Após a instalação, o Argo CD estará disponível em:
-```
-http://$ARGOCD_EXTERNAL_IP
-```
-Usuário: **admin**
-Senha: **$ARGOCD_PASSWORD**
+### 🔹 **Acessar Argo CD**
 
-### **📌 Acessar o Ambiente**
-A aplicação pode ser acessada via:
-```
-http://$EXTERNAL_IP/frontend/nginx
-```
+Obtenha o **IP Externo** do Argo CD:
 
-Se estiver usando Minikube, adicione ao `/etc/hosts`:
 ```bash
-echo "$EXTERNAL_IP frontend.example.com" | sudo tee -a /etc/hosts
+kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
-Agora você pode acessar:
+Depois, acesse no navegador:
+
 ```
-http://frontend.example.com
+http://<EXTERNAL_IP>
+```
+
+Usuário: `admin`  
+Senha: Obtida pelo comando:
+
+```bash
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
+```
+
+### 🔹 **Acessar o Nginx**
+
+Obtenha o **EXTERNAL-IP** do Istio:
+
+```bash
+kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
+
+Acesse no navegador:
+
+```
+http://<EXTERNAL_IP>/frontend/nginx
+```
+
+### 🔹 **Gerenciar Argo Rollouts**
+
+Acesse o painel do Argo Rollouts com:
+
+```bash
+kubectl argo rollouts dashboard -n argo-rollouts
+```
+
+Valide o estado do Rollout:
+
+```bash
+kubectl argo rollouts get rollout nginx -n frontend
 ```
 
 ---
 
-## 🎯 **Conclusão**
-Este script configura automaticamente um ambiente Kubernetes com **Minikube, MetalLB, Istio, Argo CD e Argo Rollouts**, permitindo que você **implante e gerencie aplicações de maneira automatizada e escalável**.
+## 🛠 **Testando um Deploy Canary**
 
-Agora seu ambiente está **pronto para deploys automatizados com GitOps e rollouts progressivos!** 🚀🔥
+Atualize a imagem do Nginx para uma nova versão:
+
+```bash
+kubectl argo rollouts set image nginx nginx=nginx:1.21 -n frontend
+```
+
+Isso iniciará um rollout gradual com pesos configurados (20% → 50% → 100%).
+
+**Acompanhe a progressão do rollout:**
+
+```bash
+kubectl argo rollouts get rollout nginx -n frontend --watch
+```
+
+Se precisar reverter para a versão estável anterior:
+
+```bash
+kubectl argo rollouts abort nginx -n frontend
+```
+
+---
+
+## 🎉 **Conclusão**
+
+Agora você tem um ambiente Kubernetes **completo**, incluindo:
+
+✅ **Gerenciamento GitOps com Argo CD**  
+✅ **Implantação progressiva com Argo Rollouts**  
+✅ **Balanceamento de carga com MetalLB**  
+✅ **Controle de tráfego e Service Mesh com Istio**  
+
+Se precisar de suporte ou melhorias, contribua com PRs! 🚀
 

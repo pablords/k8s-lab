@@ -1,12 +1,22 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: parking
   namespace: backend
   labels:
     app: parking
 spec:
-  replicas: 1
+  replicas: 2
+  revisionHistoryLimit: 2  # Mantém apenas 3 revisões no histórico
+  strategy:
+    canary:
+      stableService: parking-stable  # 🔥 Define o serviço estável
+      steps:
+      - setWeight: 20
+      - pause: {duration: 10s}
+      - setWeight: 50
+      - pause: {duration: 20s}
+      - setWeight: 100
   selector:
     matchLabels:
       app: parking
@@ -36,7 +46,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: parking
+  name: parking-stable
   namespace: backend
 spec:
   selector:
