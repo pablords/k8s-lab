@@ -1,16 +1,21 @@
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: argo-rollouts
+  name: argo-rollouts-dashboard
   namespace: argo-rollouts
 spec:
   hosts:
-  - "argo.lab.com.br"
+  - "lab.com.br"
   gateways:
-  - istio-system/ingressgateway
+  - istio-system/ingress-gateway
   http:
-  - route:
+  - match:
+    - uri:
+        prefix: /rollouts-dashboard
+    rewrite:
+      uri: /
+    route:
     - destination:
-        host: argo-rollouts.argo-rollouts.svc.cluster.local
+        host: argo-rollouts-dashboard.argo-rollouts.svc.cluster.local
         port:
           number: 80
