@@ -6,9 +6,11 @@ metadata:
   labels:
     app: nginx
 spec:
-  replicas: 5
+  replicas: 3
+  revisionHistoryLimit: 3  # Mantém apenas 3 revisões no histórico
   strategy:
     canary:
+      stableService: nginx-stable  # 🔥 Define o serviço estável
       steps:
       - setWeight: 20
       - pause: {duration: 10s}
@@ -35,6 +37,7 @@ spec:
       - name: html-volume
         configMap:
           name: nginx-html
+
 ---
 
 apiVersion: v1
