@@ -64,19 +64,6 @@ kubectl apply -f k8s/config/namespaces.yml
 echo "🌍 Aplicando configuração do Istio Gateway..."
 kubectl apply -f k8s/config/istio/gateway.yml
 
-echo "📦 Implantando messaging..."
-kubectl apply -f k8s/messaging/deployment.yml
-kubectl apply -f k8s/messaging/virtual-service.yml
-
-echo "📦 Implantando db..."
-kubectl apply -f k8s/db/mysql-configmap.yml
-kubectl apply -f k8s/db/mysql-deployment.yml
-
-echo "📦 Implantando parking..."
-kubectl apply -f k8s/parking/configmap.yml
-kubectl apply -f k8s/parking/deployment.yml
-kubectl apply -f k8s/parking/virtual-service.yml
-kubectl apply -f k8s/parking/destination-rule.yml
 
 # 🔹 Instalar Argo CD
 echo "🚀 Instalando Argo CD..."
@@ -90,17 +77,20 @@ kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}
 echo "🚀 Instalando Argo Rollouts..."
 kubectl create namespace argo-rollouts
 helm install argo-rollouts argo/argo-rollouts --namespace argo-rollouts
+kubectl apply -f k8s/argo-rollouts/service.yml
+kubectl apply -f k8s/argo-rollouts/vs.yml
 
 # 🔹 Configurar Argo CD para reconhecer Argo Rollouts
 echo "🔧 Configurando Argo CD para suportar Argo Rollouts..."
 kubectl patch configmap/argocd-cm -n argocd --type merge -p '{"data": {"resource.customizations.health.argoproj.io_Rollout": "# Health check for Argo Rollouts\nhs = {} hs.status = \"Healthy\" if obj.status and obj.status.readyReplicas == obj.status.replicas else \"Progressing\"\nhs"}}'
 kubectl rollout restart deployment argocd-server -n argocd
 
-# # 9️⃣ Implantar o Nginx com VirtualService e DestinationRule
-# echo "📦 Implantando Nginx..."
-# kubectl apply -f k8s/nginx/deployment.yml
-# kubectl apply -f k8s/nginx/virtual-service.yml
-# kubectl apply -f k8s/nginx/destination-rule.yml
+# 9️⃣ Implantar o Nginx com VirtualService e DestinationRule
+echo "📦 Implantando apps argocd..."
+kubectl apply -f apps/backend/parking/app.yml
+kubectl apply -f apps/data/db/app.yml
+kubectl apply -f apps/data/messaging/app.yml
+kubectl apply -f apps/frontend/nginx/app.yml
 
 
 ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
