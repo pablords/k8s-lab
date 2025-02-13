@@ -71,18 +71,22 @@ kubectl create namespace argocd
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 helm install argocd argo/argo-cd --namespace argocd
-kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
 
 # 🔹 Instalar Argo Rollouts
 echo "🚀 Instalando Argo Rollouts..."
 kubectl create namespace argo-rollouts
 helm install argo-rollouts argo/argo-rollouts --namespace argo-rollouts
 kubectl apply -f k8s/argo-rollouts/service.yml
-kubectl apply -f k8s/argo-rollouts/vs.yml
+kubectl apply -f k8s/argo-rollouts/virtual-service.yml
 
 # 🔹 Configurar Argo CD para reconhecer Argo Rollouts
 echo "🔧 Configurando Argo CD para suportar Argo Rollouts..."
 kubectl patch configmap/argocd-cm -n argocd --type merge -p '{"data": {"resource.customizations.health.argoproj.io_Rollout": "# Health check for Argo Rollouts\nhs = {} hs.status = \"Healthy\" if obj.status and obj.status.readyReplicas == obj.status.replicas else \"Progressing\"\nhs"}}'
+kubectl patch configmap argocd-cm -n argocd --type merge -p '{"data":{"url":"http://lab.com.br/argo-cd"}}'
+kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge -p '{"data":{"server.basehref": "/argo-cd","server.insecure": "true","server.rootpath": "/argo-cd"}}'
+kubectl apply -f k8s/argo-cd/destination-rule.yml
+kubectl apply -f k8s/argo-cd/virtual-service.yml
 kubectl rollout restart deployment argocd-server -n argocd
 
 # 9️⃣ Implantar o Nginx com VirtualService e DestinationRule
@@ -94,7 +98,6 @@ kubectl apply -f apps/frontend/nginx/app.yml
 
 
 ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
-ARGOCD_EXTERNAL_IP=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 
 EXTERNAL_IP=""
@@ -109,6 +112,6 @@ done
 echo $ARGOCD_PASSWORD > argo_password
 
 echo "🎉 Configuração concluída!"
-echo "✅ ArgoCD disponível em: http://$ARGOCD_EXTERNAL_IP utilizando o usuario admin com a senha: $ARGOCD_PASSWORD"
-echo "✅ Acesse o ambiente em: http://$EXTERNAL_IP/frontend/nginx"
+echo "✅ ArgoCD disponível em: http://lab.com.br/argo-cd utilizando o usuario admin com a senha: $ARGOCD_PASSWORD"
+echo "✅ Acesse o nginx para validar ambiente de front em: http://lab.com.br/frontend/nginx"
 
