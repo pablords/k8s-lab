@@ -79,7 +79,7 @@ kubectl apply -f k8s/argo-cd/virtual-service.yml
 # 🔹 Instalar Argo Rollouts
 echo "🚀 Instalando Argo Rollouts..."
 kubectl create namespace argo-rollouts
-helm install argo-rollouts argo/argo-rollouts --namespace argo-rollouts
+helm install argo-rollouts argo/argo-rollouts --namespace argo-rollouts --set dashboard.enabled=true
 kubectl apply -f k8s/argo-rollouts/service.yml
 kubectl apply -f k8s/argo-rollouts/virtual-service.yml
 
