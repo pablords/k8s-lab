@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+data:
+  resource.customizations.health.argoproj.io_Rollout: |
+    hs = {}
+    if obj.status ~= nil then
+      if obj.status.abort ~= nil then
+        hs.status = "Degraded"
+        hs.message = obj.status.abort
+        return hs
+      end
+      if obj.status.pauseConditions ~= nil then
+        hs.status = "Suspended"
+        hs.message = "Rollout is paused"
+        return hs
+      end
+      if obj.status.phase ~= nil and obj.status.phase == "Progressing" then
+        hs.status = "Progressing"
+        hs.message = obj.status.message
+        return hs
+      end
+      if obj.status.phase ~= nil and obj.status.phase == "Degraded" then
+        hs.status = "Degraded"
+        hs.message = obj.status.message
+        return hs
+      end
+      if obj.status.phase ~= nil and obj.status.phase == "Healthy" then
+        hs.status = "Healthy"
+        hs.message = obj.status.message
+        return hs
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for rollout to complete"
+    return hs
+  server.rbac.log.enforce.enable: 'false'
+  statusbadge.enabled: 'false'
+  timeout.hard.reconciliation: 0s
+  timeout.reconciliation: 180s
+  url: http://lab.com.br/argo-cd

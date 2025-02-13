@@ -71,6 +71,9 @@ kubectl create namespace argocd
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 helm install argocd argo/argo-cd --namespace argocd
+kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge -p '{"data":{"server.basehref": "/argo-cd","server.insecure": "true","server.rootpath": "/argo-cd"}}'
+kubectl apply -f k8s/argo-cd/destination-rule.yml
+kubectl apply -f k8s/argo-cd/virtual-service.yml
 
 
 # 🔹 Instalar Argo Rollouts
@@ -82,11 +85,7 @@ kubectl apply -f k8s/argo-rollouts/virtual-service.yml
 
 # 🔹 Configurar Argo CD para reconhecer Argo Rollouts
 echo "🔧 Configurando Argo CD para suportar Argo Rollouts..."
-kubectl patch configmap/argocd-cm -n argocd --type merge -p '{"data": {"resource.customizations.health.argoproj.io_Rollout": "# Health check for Argo Rollouts\nhs = {} hs.status = \"Healthy\" if obj.status and obj.status.readyReplicas == obj.status.replicas else \"Progressing\"\nhs"}}'
-kubectl patch configmap argocd-cm -n argocd --type merge -p '{"data":{"url":"http://lab.com.br/argo-cd"}}'
-kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge -p '{"data":{"server.basehref": "/argo-cd","server.insecure": "true","server.rootpath": "/argo-cd"}}'
-kubectl apply -f k8s/argo-cd/destination-rule.yml
-kubectl apply -f k8s/argo-cd/virtual-service.yml
+kubectl apply -f k8s/argo-cd/argocd-cm.yml
 kubectl rollout restart deployment argocd-server -n argocd
 
 # 9️⃣ Implantar o Nginx com VirtualService e DestinationRule
@@ -96,12 +95,7 @@ kubectl apply -f apps/data/db/app.yml
 kubectl apply -f apps/data/messaging/app.yml
 kubectl apply -f apps/frontend/nginx/app.yml
 
-
-ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
-
-
 EXTERNAL_IP=""
-
 # Aguarda até que o External IP seja atribuído pelo MetalLB
 while [ -z "$EXTERNAL_IP" ]; do
   echo "⏳ Aguardando MetalLB atribuir um External IP..."
@@ -109,9 +103,12 @@ while [ -z "$EXTERNAL_IP" ]; do
   EXTERNAL_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 done
 
+ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
 echo $ARGOCD_PASSWORD > argo_password
 
 echo "🎉 Configuração concluída!"
-echo "✅ ArgoCD disponível em: http://lab.com.br/argo-cd utilizando o usuario admin com a senha: $ARGOCD_PASSWORD"
+echo "✅ Aponte $EXTERNAL_IP para lab.com.br em seu arquivo de hosts"
 echo "✅ Acesse o nginx para validar ambiente de front em: http://lab.com.br/frontend/nginx"
+echo "✅ ArgoCD disponível em: http://lab.com.br/argo-cd utilizando o usuario admin com a senha: $ARGOCD_PASSWORD"
+
 
