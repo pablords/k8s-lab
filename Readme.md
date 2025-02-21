@@ -201,5 +201,3 @@ Agora você tem um ambiente Kubernetes **completo**, incluindo:
 ✅ **Balanceamento de carga com MetalLB**  
 ✅ **Controle de tráfego e Service Mesh com Istio**  
 
-Se precisar de suporte ou melhorias, contribua com PRs! 🚀
-
