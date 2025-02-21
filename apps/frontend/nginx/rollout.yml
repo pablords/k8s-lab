@@ -12,10 +12,16 @@ spec:
     canary:
       stableService: nginx-stable  # 🔥 Define o serviço estável
       steps:
+      - setWeight: 10
+      - pause: {duration: 10s}
       - setWeight: 20
       - pause: {duration: 10s}
+      - setWeight: 30
+      - pause: {duration: 10s}
+      - setWeight: 40
+      - pause: {duration: 10s}
       - setWeight: 50
-      - pause: {duration: 20s}
+      - pause: {duration: 30s}
       - setWeight: 100
   selector:
     matchLabels:
