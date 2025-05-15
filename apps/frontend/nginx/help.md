@@ -1,6 +1,6 @@
 kubectl argo rollouts get rollout -n frontend nginx --watch
 
-kubectl argo rollouts set image -n frontend nginx nginx=nginx:1.20
+kubectl argo rollouts set image -n frontend nginx nginx=nginx:1.27-alpine3.21
 
 Promover ou Reverter:
 

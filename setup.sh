@@ -2,10 +2,10 @@
 
 set -e  # Para encerrar em caso de erro
 
-NODES=2
+NODES=3
 CPUS=4
-MEMORY=10000
-DISK=10G
+MEMORY=15000
+DISK=15G
 DRIVER=docker
 K8S_VERSION=v1.28.3
 
@@ -14,7 +14,7 @@ echo "nodes: $NODES, cpus: $CPUS, memory: $MEMORY, disk: $DISK, driver: $DRIVER,
 
 # 1️⃣ Iniciar o Minikube com 4 nós, CPUs e memória configuradas
 echo "🔥 Iniciando Minikube..."
-minikube start --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION
+minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION
 
 # 2️⃣ Habilitar o MetalLB
 echo "✅ Habilitando MetalLB..."
@@ -94,6 +94,11 @@ kubectl apply -f apps/backend/parking/app.yml
 kubectl apply -f apps/data/db/app.yml
 kubectl apply -f apps/data/messaging/app.yml
 kubectl apply -f apps/frontend/nginx/app.yml
+
+# Implantar kafka
+echo "Implantando kafka"
+kubectl apply -f apps/kafka/manifest.yml
+
 
 EXTERNAL_IP=""
 # Aguarda até que o External IP seja atribuído pelo MetalLB
