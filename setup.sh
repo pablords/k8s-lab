@@ -48,7 +48,8 @@ minikube dashboard &
 # 5️⃣ Instalar Istio
 echo "🛠 Instalando Istio..."
 ISTIO_VERSION="1.24.2"
-curl -L https://istio.io/downloadIstio | sh -
+curl -L https://github.com/istio/istio/releases/download/$ISTIO_VERSION/istio-$ISTIO_VERSION-linux-amd64.tar.gz --output istio-$ISTIO_VERSION.tar.gz | sh -
+tar -xzf istio-$ISTIO_VERSION.tar.gz
 export PATH=$PWD/istio-$ISTIO_VERSION/bin:$PATH
 istioctl install --set profile=demo -y
 
