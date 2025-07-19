@@ -5,6 +5,8 @@ metadata:
   namespace: backend
   labels:
     app: parking
+  annotations:
+    instrumentation.opentelemetry.io/inject-java: "instrumentation"
 spec:
   replicas: 2
   revisionHistoryLimit: 2  # Mantém apenas 3 revisões no histórico

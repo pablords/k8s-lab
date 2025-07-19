@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: observability
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
+              allowed_headers:
+                - "Content-Type"
+                - "User-Agent"
+                - "X-Requested-With"
+
+    processors:
+      batch:
+        send_batch_size: 8192
+        timeout: 5s
+
+    exporters:
+      otlphttp/elastic:
+        endpoint: "http://apm-server-apm-server.observability:8200"
+        sending_queue:
+          enabled: true
+          queue_size: 50000
+        tls:
+          insecure_skip_verify: true
+        headers:
+          Authorization: "Bearer supersecrettoken123"
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [otlphttp/elastic]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: observability
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+      - name: otel-collector
+        image: otel/opentelemetry-collector-contrib:0.81.0
+        args:
+        - --config=/conf/config.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /conf
+        ports:
+        - containerPort: 4317 # OTLP gRPC
+        - containerPort: 4318 # OTLP HTTP
+      volumes:
+      - name: config
+        configMap:
+          name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: observability
+spec:
+  selector:
+    app: otel-collector
+  ports:
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318

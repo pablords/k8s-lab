@@ -1,0 +1,38 @@
+resources:
+  - base.yml
+
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: loadgenerator
+    patch: |
+      [
+        { "op": "remove", "path": "/" }
+      ]
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: otelcol
+    patch: |
+      [
+        { "op": "remove", "path": "/" }
+      ]
+  - target:
+      version: v1
+      kind: Service
+      name: loadgenerator
+    patch: |
+      [
+        { "op": "remove", "path": "/" }
+      ]
+  - target:
+      version: v1
+      kind: Service
+      name: otelcol
+    patch: |
+      [
+        { "op": "remove", "path": "/" }
+      ]

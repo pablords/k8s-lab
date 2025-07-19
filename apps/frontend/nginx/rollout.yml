@@ -5,6 +5,8 @@ metadata:
   namespace: frontend
   labels:
     app: nginx
+  annotations:
+    instrumentation.opentelemetry.io/inject-nginx: "instrumentation"  
 spec:
   replicas: 3
   revisionHistoryLimit: 3  # Mantém apenas 3 revisões no histórico

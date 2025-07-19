@@ -21,3 +21,13 @@ metadata:
   name: data
   labels:
     istio-injection: enabled
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+  labels:
+    istio-injection: enabled
+---

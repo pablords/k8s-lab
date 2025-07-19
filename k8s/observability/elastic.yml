@@ -1,0 +1,153 @@
+
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: observability
+spec:
+  serviceName: elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      initContainers:
+        - name: fix-perms
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
+          volumeMounts:
+            - name: elasticsearch-data
+              mountPath: /usr/share/elasticsearch/data
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+        env:
+        - name: discovery.type
+          value: single-node
+        - name: ES_JAVA_OPTS
+          value: "-Xms512m -Xmx512m"
+        ports:
+        - containerPort: 9200
+        volumeMounts:
+        - name: elasticsearch-data
+          mountPath: /usr/share/elasticsearch/data
+  volumeClaimTemplates:
+  - metadata:
+      name: elasticsearch-data
+    spec:
+      storageClassName: standard
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: observability
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - port: 9200
+    targetPort: 9200
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:8.9.0
+        env:
+        - name: ELASTICSEARCH_HOSTS
+          value: "https://elasticsearch:9200"
+        - name: ELASTICSEARCH_USERNAME
+          value: "kibana_system"     # Ou "kibana_system" se preferir
+        - name: ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kibana-credentials
+              key: password
+        - name: SERVER_PUBLICBASEURL
+          value: "http://kibana.lab.com.br/"
+        - name: ELASTICSEARCH_SSL_VERIFICATIONMODE
+          value: "none"
+        ports:
+        - containerPort: 5601
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: observability
+spec:
+  selector:
+    app: kibana
+  ports:
+  - port: 5601
+    targetPort: 5601
+  type: NodePort
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: elasticsearch-vs
+  namespace: observability
+spec:
+  hosts:
+    - "elk.lab.com.br" # Permitir tráfego externo de qualquer IP/Domínio
+  gateways:
+    - istio-system/ingress-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: elasticsearch.observability.svc.cluster.local
+            port:
+              number: 9200
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: kibana-vs
+  namespace: observability
+spec:
+  hosts:
+    - "kibana.lab.com.br"
+  gateways:
+    - istio-system/ingress-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: kibana.observability.svc.cluster.local
+            port:
+              number: 5601
