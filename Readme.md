@@ -201,6 +201,3 @@ Agora você tem um ambiente Kubernetes **completo**, incluindo:
 ✅ **Balanceamento de carga com MetalLB**  
 ✅ **Controle de tráfego e Service Mesh com Istio**  
 
-
-# Reset de senha ELK
-kubectl -n observability exec -it <nome-do-pod> -- bin/elasticsearch-reset-password -u elastic
