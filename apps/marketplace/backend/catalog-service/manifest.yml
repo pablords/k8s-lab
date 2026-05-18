@@ -24,10 +24,16 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
-        - name: DB_HOST
+        - name: DB_HOSTNAME
           value: "catalog-db.marketplace.svc.cluster.local"
-        - name: DB_PORT
+        - name: POSTGRES_PORT
           value: "5432"
+        - name: POSTGRES_USER
+          value: "catalog"
+        - name: POSTGRES_PASSWORD
+          value: "catalog"
+        - name: POSTGRES_DB
+          value: "catalog"
         - name: REDIS_HOST
           value: "redis.marketplace.svc.cluster.local"
         - name: REDIS_PORT
