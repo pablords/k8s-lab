@@ -19,7 +19,7 @@ spec:
       - name: catalog-db
         image: postgres:15-alpine
         imagePullPolicy: IfNotPresent
-        command: ["postgres", "-c", "wal_level=logical"]
+        args: ["-c", "wal_level=logical"]
         env:
         - name: POSTGRES_USER
           value: "catalog"

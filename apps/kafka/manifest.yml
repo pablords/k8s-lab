@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: kafka-container
-          image: bitnamilegacy/kafka:latest
+          image: bitnamilegacy/kafka:3.4.0
           ports:
           - containerPort: 9092
             name: server

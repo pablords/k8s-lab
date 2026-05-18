@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: search-service
-        image: pablords/search-service:latest
+        image: marketplace/search-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8083

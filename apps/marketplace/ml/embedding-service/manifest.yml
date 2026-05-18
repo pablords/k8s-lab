@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: ml-embedding-service
-        image: pablords/ml-embedding-service:latest
+        image: marketplace/ml-embedding-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8085

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: indexing-service
-        image: pablords/indexing-service:latest
+        image: marketplace/indexing-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8082

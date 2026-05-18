@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: pablords/api-gateway:latest
+        image: marketplace/api-gateway:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
