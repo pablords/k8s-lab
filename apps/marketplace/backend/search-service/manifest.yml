@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-service
+  namespace: marketplace
+  labels:
+    app: search-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-service
+  template:
+    metadata:
+      labels:
+        app: search-service
+    spec:
+      containers:
+      - name: search-service
+        image: pablords/search-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8083
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "production"
+        - name: OPENSEARCH_HOST
+          value: "opensearch.observability.svc.cluster.local"
+        - name: OPENSEARCH_PORT
+          value: "9200"
+        - name: REDIS_HOST
+          value: "redis.marketplace.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: ML_EMBEDDING_URL
+          value: "http://ml-embedding-service.marketplace.svc.cluster.local:8085"
+        - name: ML_RANKING_URL
+          value: "http://ml-ranking-service.marketplace.svc.cluster.local:8084"
+        - name: OTEL_SERVICE_NAME
+          value: "search-service"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector.observability.svc.cluster.local:4318"
+        - name: OTEL_METRICS_EXPORTER
+          value: "none"
+        - name: OTEL_LOGS_EXPORTER
+          value: "none"
+        - name: OTEL_HTTP_SERVER_EXCLUDED_PATHS
+          value: "/actuator/prometheus,/actuator/health"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: LOG_LEVEL_ML
+          value: "INFO"
+        - name: LOG_LEVEL_FEATURE_STORE
+          value: "INFO"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: SPRING_OUTPUT_ANSI_ENABLED
+          value: "NEVER"
+        - name: OTEL_INSTRUMENTATION_METHODS_INCLUDE
+          value: "com.marketplace.search.search.domain.services.SearchDomainService[smartSearch,fetchAndValidateCandidates,applyBusinessRules,calculateBusinessBoost,searchWithFallback],com.marketplace.search.search.application.usecases.SearchProductsUseCase[execute],com.marketplace.search.search.infrastructure.opensearch.repositories.OpenSearchProductSearchRepository[search,searchCandidatesWithScores],com.marketplace.search.search.infrastructure.ml.MlRankingClient[rank],com.marketplace.search.search.infrastructure.embedding.EmbeddingClient[getEmbedding]"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/actuator/health
+            port: 8083
+          initialDelaySeconds: 40
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-service
+  namespace: marketplace
+spec:
+  selector:
+    app: search-service
+  ports:
+  - port: 8083
+    targetPort: 8083

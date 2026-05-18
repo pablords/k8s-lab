@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-db
+  namespace: marketplace
+  labels:
+    app: catalog-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog-db
+  template:
+    metadata:
+      labels:
+        app: catalog-db
+    spec:
+      containers:
+      - name: catalog-db
+        image: postgres:15-alpine
+        imagePullPolicy: IfNotPresent
+        command: ["postgres", "-c", "wal_level=logical"]
+        env:
+        - name: POSTGRES_USER
+          value: "catalog"
+        - name: POSTGRES_PASSWORD
+          value: "catalog"
+        - name: POSTGRES_DB
+          value: "catalog"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        livenessProbe:
+          exec:
+            command: ["pg_isready", "-U", "catalog"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: postgres-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-db
+  namespace: marketplace
+spec:
+  selector:
+    app: catalog-db
+  ports:
+  - port: 5432
+    targetPort: 5432

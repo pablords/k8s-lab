@@ -2,7 +2,7 @@
 
 .PHONY: all prepare argo certmanager-otel elasticsearch deploy
 
-all: prepare argo certmanager-otel observability monitoring deploy
+all: prepare argo certmanager-otel observability monitoring deploy-marketplace
 
 prepare:
 	@echo "🚀 Etapa 1 - Preparar cluster Kubernetes e Istio"
@@ -24,13 +24,9 @@ monitoring:
 	@echo "🚀 Etapa 4.5 - Instalar Prometheus, Grafana e Fluent-Bit"
 	bash scripts/05_install_prometheus_grafana_fluentbit.sh
 
-deploy-store:
-	@echo "🚀 Etapa 5 - Implantar aplicações de loja"
-	bash scripts/05_deploy_apps_store.sh
-
-deploy:
-	@echo "🚀 Etapa 6 - Implantar aplicações"
-	bash scripts/06_deploy_apps.sh
+deploy-marketplace:
+	@echo "🚀 Etapa 5 - Implantar aplicações do Marketplace"
+	bash scripts/05_deploy_marketplace.sh
 
 delete:
 	@echo "🗑️  Deletando todos os recursos do cluster"
@@ -45,8 +41,7 @@ help:
 	@echo "  make argo               - Etapa 2: Instalar Argo CD e Rollouts"
 	@echo "  make certmanager-otel   - Etapa 3: Instalar cert-manager e OpenTelemetry Operator"
 	@echo "  make observability      - Etapa 4: Instalar Elasticsearch, Kibana e APM Server"
-	@echo "  make deploy-store             - Etapa 5: Implantar aplicações loja"
-	@echo "  make deploy             - Etapa 6: Implantar aplicações"
+	@echo "  make deploy-marketplace - Etapa 5: Implantar ecossistema do Marketplace"
 	@echo ""
 	@echo "Para executar tudo em sequência:"
 	@echo "  make all"

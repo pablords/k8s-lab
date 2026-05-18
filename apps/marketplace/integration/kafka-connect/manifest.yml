@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-connect
+  namespace: marketplace
+  labels:
+    app: kafka-connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-connect
+  template:
+    metadata:
+      labels:
+        app: kafka-connect
+    spec:
+      containers:
+      - name: kafka-connect
+        image: debezium/connect:2.6.0.Final
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8083
+        env:
+        - name: BOOTSTRAP_SERVERS
+          value: "kafka-0.kafka-hs.kafka.svc.cluster.local:9092,kafka-1.kafka-hs.kafka.svc.cluster.local:9092,kafka-2.kafka-hs.kafka.svc.cluster.local:9092"
+        - name: GROUP_ID
+          value: "debezium-connect"
+        - name: CONFIG_STORAGE_TOPIC
+          value: "connect_configs"
+        - name: OFFSET_STORAGE_TOPIC
+          value: "connect_offsets"
+        - name: STATUS_STORAGE_TOPIC
+          value: "connect_status"
+        - name: CONFIG_STORAGE_REPLICATION_FACTOR
+          value: "1"
+        - name: OFFSET_STORAGE_REPLICATION_FACTOR
+          value: "1"
+        - name: STATUS_STORAGE_REPLICATION_FACTOR
+          value: "1"
+        - name: CONNECT_BOOTSTRAP_SERVERS
+          value: "kafka-0.kafka-hs.kafka.svc.cluster.local:9092,kafka-1.kafka-hs.kafka.svc.cluster.local:9092,kafka-2.kafka-hs.kafka.svc.cluster.local:9092"
+        - name: CONNECT_REST_ADVERTISED_HOST_NAME
+          value: "kafka-connect"
+        - name: CONNECT_REST_ADVERTISED_PORT
+          value: "8083"
+        - name: CONNECT_REST_HOST_NAME
+          value: "0.0.0.0"
+        - name: CONNECT_REST_PORT
+          value: "8083"
+        - name: CONNECT_KEY_CONVERTER
+          value: "org.apache.kafka.connect.json.JsonConverter"
+        - name: CONNECT_VALUE_CONVERTER
+          value: "org.apache.kafka.connect.json.JsonConverter"
+        - name: CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE
+          value: "false"
+        - name: CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE
+          value: "false"
+        - name: CONNECT_PLUGIN_PATH
+          value: "/kafka/connect"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8083
+          initialDelaySeconds: 120
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-connect
+  namespace: marketplace
+spec:
+  selector:
+    app: kafka-connect
+  ports:
+  - port: 8083
+    targetPort: 8083

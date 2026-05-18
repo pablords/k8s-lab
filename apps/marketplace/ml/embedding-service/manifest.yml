@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-embedding-service
+  namespace: marketplace
+  labels:
+    app: ml-embedding-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-embedding-service
+  template:
+    metadata:
+      labels:
+        app: ml-embedding-service
+    spec:
+      containers:
+      - name: ml-embedding-service
+        image: pablords/ml-embedding-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8085
+        env:
+        - name: REDIS_HOST
+          value: "redis.marketplace.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: OPENSEARCH_HOST
+          value: "opensearch.observability.svc.cluster.local"
+        - name: OPENSEARCH_PORT
+          value: "9200"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector.observability.svc.cluster.local:4318"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8085
+          initialDelaySeconds: 60
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-embedding-service
+  namespace: marketplace
+spec:
+  selector:
+    app: ml-embedding-service
+  ports:
+  - port: 8085
+    targetPort: 8085

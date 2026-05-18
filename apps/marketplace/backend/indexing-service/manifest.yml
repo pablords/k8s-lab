@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: indexing-service
+  namespace: marketplace
+  labels:
+    app: indexing-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: indexing-service
+  template:
+    metadata:
+      labels:
+        app: indexing-service
+    spec:
+      containers:
+      - name: indexing-service
+        image: pablords/indexing-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "production"
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-0.kafka-hs.kafka.svc.cluster.local:9092,kafka-1.kafka-hs.kafka.svc.cluster.local:9092,kafka-2.kafka-hs.kafka.svc.cluster.local:9092"
+        - name: OPENSEARCH_HOST
+          value: "opensearch.observability.svc.cluster.local"
+        - name: OPENSEARCH_PORT
+          value: "9200"
+        - name: REDIS_HOST
+          value: "redis.marketplace.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: ML_EMBEDDING_URL
+          value: "http://ml-embedding-service.marketplace.svc.cluster.local:8085"
+        - name: OTEL_SERVICE_NAME
+          value: "indexing-service"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector.observability.svc.cluster.local:4318"
+        - name: OTEL_METRICS_EXPORTER
+          value: "none"
+        - name: OTEL_LOGS_EXPORTER
+          value: "none"
+        - name: OTEL_HTTP_SERVER_EXCLUDED_PATHS
+          value: "/actuator/prometheus,/actuator/health"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: LOGGING_LEVEL_COM_MARKETPLACE_SEARCH
+          value: "INFO"
+        - name: OTEL_INSTRUMENTATION_METHODS_INCLUDE
+          value: "com.marketplace.search.indexing.application.usecases.IndexProductUseCase[execute],com.marketplace.search.indexing.application.services.ProductEnrichmentService[enrich],com.marketplace.search.indexing.application.services.ProductFeatureCalculationService[calculate],com.marketplace.search.indexing.domain.services.FeatureExtractor[extract]"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/actuator/health/liveness
+            port: 8082
+          initialDelaySeconds: 60
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: indexing-service
+  namespace: marketplace
+spec:
+  selector:
+    app: indexing-service
+  ports:
+  - port: 8082
+    targetPort: 8082
