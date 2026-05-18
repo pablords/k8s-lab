@@ -27,22 +27,17 @@ data:
         timeout: 5s
 
     exporters:
-      otlphttp/elastic:
-        endpoint: "http://apm-server-apm-server.observability:8200"
-        sending_queue:
-          enabled: true
-          queue_size: 50000
+      otlp:
+        endpoint: "jaeger-collector.observability.svc.cluster.local:4317"
         tls:
-          insecure_skip_verify: true
-        headers:
-          Authorization: "Bearer supersecrettoken123"
+          insecure: true
 
     service:
       pipelines:
         traces:
           receivers: [otlp]
           processors: [batch]
-          exporters: [otlphttp/elastic]
+          exporters: [otlp]
 ---
 apiVersion: apps/v1
 kind: Deployment

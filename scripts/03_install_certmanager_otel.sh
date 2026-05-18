@@ -11,7 +11,7 @@ kubectl rollout status deployment cert-manager-webhook -n cert-manager
 echo "✅ cert-manager pronto."
 
 echo "🚀 Instalando OpenTelemetry Operator..."
-kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/download/v0.90.0/opentelemetry-operator.yaml
+kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/download/v0.151.0/opentelemetry-operator.yaml
 
 kubectl rollout status deployment opentelemetry-operator-controller-manager -n opentelemetry-operator-system
 

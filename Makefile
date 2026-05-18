@@ -2,7 +2,7 @@
 
 .PHONY: all prepare argo certmanager-otel elasticsearch deploy
 
-all: prepare argo certmanager-otel elasticsearch deploy
+all: prepare argo certmanager-otel observability monitoring deploy
 
 prepare:
 	@echo "🚀 Etapa 1 - Preparar cluster Kubernetes e Istio"
@@ -17,8 +17,12 @@ certmanager-otel:
 	bash scripts/03_install_certmanager_otel.sh
 
 observability:
-	@echo "🚀 Etapa 4 - Instalar Elasticsearch, Kibana e APM Server"
-	bash scripts/04_install_elasticsearch_kibana_apm.sh
+	@echo "🚀 Etapa 4 - Instalar OpenSearch, Dashboards e Jaeger"
+	bash scripts/04_install_opensearch_observability.sh
+
+monitoring:
+	@echo "🚀 Etapa 4.5 - Instalar Prometheus, Grafana e Fluent-Bit"
+	bash scripts/05_install_prometheus_grafana_fluentbit.sh
 
 deploy-store:
 	@echo "🚀 Etapa 5 - Implantar aplicações de loja"

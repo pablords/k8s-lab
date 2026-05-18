@@ -5,13 +5,13 @@ metadata:
   namespace: argocd
 spec:
   hosts:
-  - "lab.com.br"
+  - "argo.lab.com.br"
   gateways:
   - istio-system/ingress-gateway 
   http:
   - match:
     - uri:
-        prefix: /argo-cd
+        prefix: /
     route:
     - destination:
         host: argocd-server.argocd.svc.cluster.local 

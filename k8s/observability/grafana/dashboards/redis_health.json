@@ -1,0 +1,126 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Redis Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "redis_up", "legendFormat": "UP", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" }, "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Uptime",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        { "expr": "redis_uptime_in_seconds", "legendFormat": "Uptime", "refId": "A" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 3,
+      "title": "Total Reads/Writes Processed",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "rate(redis_total_reads_processed[1m])", "legendFormat": "Reads/s", "refId": "A" },
+        { "expr": "rate(redis_total_writes_processed[1m])", "legendFormat": "Writes/s", "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "id": 4,
+      "title": "Errors and Unexpected Replies",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        { "expr": "rate(redis_total_error_replies[1m])", "legendFormat": "Total Errors/s", "refId": "A" },
+        { "expr": "rate(redis_unexpected_error_replies[1m])", "legendFormat": "Unexpected Errors/s", "refId": "B" },
+        { "expr": "redis_target_scrape_request_errors_total", "legendFormat": "Scrape Errors", "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "id": 5,
+      "title": "Slow Log",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "redis_slowlog_length", "legendFormat": "Slowlog Length", "refId": "A" },
+        { "expr": "redis_slowlog_last_id", "legendFormat": "Last Slowlog ID", "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 6,
+      "title": "Blocking and Watched Keys",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        { "expr": "redis_total_blocking_keys", "legendFormat": "Blocking Keys", "refId": "A" },
+        { "expr": "redis_total_blocking_keys_on_nokey", "legendFormat": "Blocking Keys (no key)", "refId": "B" },
+        { "expr": "redis_total_watched_keys", "legendFormat": "Watched Keys", "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 7,
+      "title": "Tracking and Clients",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "redis_tracking_clients", "legendFormat": "Tracking Clients", "refId": "A" },
+        { "expr": "redis_watching_clients", "legendFormat": "Watching Clients", "refId": "B" },
+        { "expr": "redis_tracking_total_keys", "legendFormat": "Tracking Keys", "refId": "C" },
+        { "expr": "redis_tracking_total_items", "legendFormat": "Tracking Items", "refId": "D" },
+        { "expr": "redis_tracking_total_prefixes", "legendFormat": "Tracking Prefixes", "refId": "E" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 8,
+      "title": "Replication and Expiry",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "targets": [
+        { "expr": "redis_second_repl_offset", "legendFormat": "Repl Offset", "refId": "A" },
+        { "expr": "redis_slave_expires_tracked_keys", "legendFormat": "Slave Expires Tracked Keys", "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["redis", "cache", "infra"],
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Redis - Detailed Health",
+  "uid": "redis-health"
+}

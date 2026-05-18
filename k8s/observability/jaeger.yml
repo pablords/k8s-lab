@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-collector
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger-collector
+  template:
+    metadata:
+      labels:
+        app: jaeger-collector
+    spec:
+      containers:
+      - name: jaeger-collector
+        image: jaegertracing/jaeger-collector:1.50
+        env:
+        - name: SPAN_STORAGE_TYPE
+          value: opensearch
+        - name: ES_SERVER_URLS
+          value: http://opensearch:9200
+        - name: COLLECTOR_OTLP_ENABLED
+          value: "true"
+        ports:
+        - containerPort: 4317  # OTLP gRPC
+        - containerPort: 4318  # OTLP HTTP
+        - containerPort: 14250 # Jaeger gRPC
+        - containerPort: 14268 # Jaeger HTTP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+  namespace: observability
+spec:
+  selector:
+    app: jaeger-collector
+  ports:
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318
+  - name: collector-grpc
+    port: 14250
+    targetPort: 14250
+  - name: collector-http
+    port: 14268
+    targetPort: 14268
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-query
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger-query
+  template:
+    metadata:
+      labels:
+        app: jaeger-query
+    spec:
+      containers:
+      - name: jaeger-query
+        image: jaegertracing/jaeger-query:1.50
+        env:
+        - name: SPAN_STORAGE_TYPE
+          value: opensearch
+        - name: ES_SERVER_URLS
+          value: http://opensearch:9200
+        # Desativar a UI servindo base path vazio ou não expondo via Ingress
+        ports:
+        - containerPort: 16686 # API & UI (UI not exposed)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-query
+  namespace: observability
+spec:
+  selector:
+    app: jaeger-query
+  ports:
+  - name: query
+    port: 16686
+    targetPort: 16686
