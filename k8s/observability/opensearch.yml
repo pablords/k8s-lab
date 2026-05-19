@@ -117,9 +117,9 @@ spec:
             prefix: /
       route:
         - destination:
-          host: opensearch.observability.svc.cluster.local
-          port:
-            number: 9200
+            host: opensearch.observability.svc.cluster.local
+            port:
+              number: 9200
 
 ---
 apiVersion: networking.istio.io/v1beta1

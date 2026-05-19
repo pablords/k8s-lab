@@ -11,12 +11,12 @@ echo "🔹 Criando ConfigMap para Grafana Dashboards..."
 kubectl delete configmap grafana-dashboards --namespace observability --ignore-not-found
 kubectl create configmap grafana-dashboards \
   --namespace observability \
-  --from-file=/k8s-lab/k8s/observability/grafana/provisioning/dashboards/
+  --from-file=k8s/observability/grafana/provisioning/dashboards/
 
 # --- Grafana Provisioning (Datasources & Dashboards Provider) ---
 echo "🔹 Preparando Datasources do Grafana..."
 mkdir -p /tmp/grafana-datasources
-cp k8s-lab/k8s/observability/grafana/provisioning/datasources/*.yml /tmp/grafana-datasources/
+cp k8s/observability/grafana/provisioning/datasources/*.yml /tmp/grafana-datasources/
 
 # Atualizando as URLs dos datasources para o K8s
 sed -i 's|http://open-search:9200|http://opensearch.observability.svc.cluster.local:9200|g' /tmp/grafana-datasources/opensearch.yml
