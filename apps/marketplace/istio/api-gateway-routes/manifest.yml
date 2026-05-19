@@ -11,7 +11,7 @@ spec:
   http:
   - match:
     - uri:
-        prefix: /api
+        prefix: /
     route:
     - destination:
         host: api-gateway.marketplace.svc.cluster.local 
