@@ -12,6 +12,10 @@ spec:
       app: api-gateway
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/api/v1/metrics"
       labels:
         app: api-gateway
     spec:

@@ -12,6 +12,10 @@ spec:
       app: catalog-service
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/api/v1/actuator/prometheus"
       labels:
         app: catalog-service
     spec:

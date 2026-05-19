@@ -12,6 +12,10 @@ spec:
       app: catalog-db
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+        prometheus.io/path: "/metrics"
       labels:
         app: catalog-db
     spec:
@@ -29,6 +33,15 @@ spec:
           value: "catalog"
         ports:
         - containerPort: 5432
+      - name: postgres-exporter
+        image: prometheuscommunity/postgres-exporter:v0.15.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DATA_SOURCE_NAME
+          value: "postgresql://catalog:catalog@localhost:5432/catalog?sslmode=disable"
+        ports:
+        - containerPort: 9187
+          name: scrape
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data

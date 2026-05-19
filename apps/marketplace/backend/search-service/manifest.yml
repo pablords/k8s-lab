@@ -12,6 +12,10 @@ spec:
       app: search-service
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8083"
+        prometheus.io/path: "/api/v1/actuator/prometheus"
       labels:
         app: search-service
     spec:

@@ -11,7 +11,7 @@ echo "🔹 Criando ConfigMap para Grafana Dashboards..."
 kubectl delete configmap grafana-dashboards --namespace observability --ignore-not-found
 kubectl create configmap grafana-dashboards \
   --namespace observability \
-  --from-file=k8s/observability/grafana/provisioning/dashboards/
+  --from-file=k8s/observability/grafana/dashboards/
 
 # --- Grafana Provisioning (Datasources & Dashboards Provider) ---
 echo "🔹 Preparando Datasources do Grafana..."
@@ -31,7 +31,7 @@ kubectl create configmap grafana-datasources \
 kubectl delete configmap grafana-dashboard-providers --namespace observability --ignore-not-found
 kubectl create configmap grafana-dashboard-providers \
   --namespace observability \
-  --from-file=/home/pablo/projetos/marketplace-search-system/docker/grafana/provisioning/dashboards/
+  --from-file=k8s/observability/grafana/provisioning/dashboards/
 
 # --- Fluent-Bit Config ---
 echo "🔹 Preparando configs do Fluent-Bit..."
