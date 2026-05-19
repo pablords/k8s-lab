@@ -17,7 +17,7 @@ certmanager-otel:
 	bash scripts/03_install_certmanager_otel.sh
 
 observability:
-	@echo "🚀 Etapa 4 - Instalar OpenSearch, Dashboards e Jaeger"
+	@echo "🚀 Etapa 4 - Instalar OpenSearch e Jaeger"
 	bash scripts/04_install_opensearch_observability.sh
 
 monitoring:
@@ -40,7 +40,7 @@ help:
 	@echo "  make prepare            - Etapa 1: Preparar cluster (Minikube, MetalLB, Istio)"
 	@echo "  make argo               - Etapa 2: Instalar Argo CD e Rollouts"
 	@echo "  make certmanager-otel   - Etapa 3: Instalar cert-manager e OpenTelemetry Operator"
-	@echo "  make observability      - Etapa 4: Instalar OpenSearch, Dashboards e Jaeger"
+	@echo "  make observability      - Etapa 4: Instalar OpenSearch e Jaeger"
 	@echo "  make monitoring         - Etapa 4.5: Instalar Prometheus, Grafana e Fluent-Bit"
 	@echo "  make deploy-marketplace - Etapa 5: Implantar ecossistema do Marketplace"
 	@echo "  make delete             - Deletar e destruir todo o cluster local"

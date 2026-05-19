@@ -59,48 +59,6 @@ spec:
     targetPort: 9200
 
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: opensearch-dashboards
-  namespace: observability
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: opensearch-dashboards
-  template:
-    metadata:
-      labels:
-        app: opensearch-dashboards
-    spec:
-      containers:
-      - name: opensearch-dashboards
-        image: opensearchproject/opensearch-dashboards:2.11.0
-        env:
-        - name: OPENSEARCH_HOSTS
-          value: '["http://opensearch:9200"]'
-        - name: DISABLE_SECURITY_DASHBOARDS_PLUGIN
-          value: "true"
-        - name: SERVER_PUBLICBASEURL
-          value: "http://dashboards.lab.com.br/"
-        ports:
-        - containerPort: 5601
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: opensearch-dashboards
-  namespace: observability
-spec:
-  selector:
-    app: opensearch-dashboards
-  ports:
-  - port: 5601
-    targetPort: 5601
-  type: NodePort
-
----
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
@@ -120,24 +78,3 @@ spec:
             host: opensearch.observability.svc.cluster.local
             port:
               number: 9200
-
----
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: opensearch-dashboards-vs
-  namespace: observability
-spec:
-  hosts:
-    - "dashboards.lab.com.br"
-  gateways:
-    - istio-system/ingress-gateway
-  http:
-    - match:
-        - uri:
-            prefix: /
-      route:
-        - destination:
-            host: opensearch-dashboards.observability.svc.cluster.local
-            port:
-              number: 5601

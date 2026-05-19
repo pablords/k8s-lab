@@ -64,7 +64,7 @@ kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadB
 Adicione o IP retornado ao seu arquivo `/etc/hosts` associando-o aos domínios definidos na arquitetura (exemplo com o IP `192.168.49.200`):
 
 ```text
-192.168.49.200 api.lab.com.br argo.lab.com.br dashboards.lab.com.br grafana.lab.com.br
+192.168.49.200 api.lab.com.br argo.lab.com.br grafana.lab.com.br
 ```
 
 ---
@@ -78,10 +78,8 @@ Após configurar o arquivo de hosts, você terá os seguintes pontos de acesso a
     *   *Actuator Health*: `http://api.lab.com.br/api/v1/health` (Saúde interna do gateway).
 *   **Painel Argo CD (GitOps)**: `http://argo.lab.com.br/`
     *   Monitore a saúde e a sincronização contínua das aplicações declaradas.
-*   **OpenSearch Dashboards (Logs Centralizados)**: `http://dashboards.lab.com.br/`
-    *   Visualização direta dos índices de logs processados pelo Fluent-Bit.
 *   **Grafana (Painéis e Métricas)**: `http://grafana.lab.com.br/`
-    *   Acesso direto aos dashboards de monitoramento e análise de performance.
+    *   Acesso direto aos dashboards de monitoramento e análise de performance (incluindo logs centralizados correlacionados).
 
 ---
 

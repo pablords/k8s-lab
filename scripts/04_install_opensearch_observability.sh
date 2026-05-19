@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Implantando OpenSearch e Dashboards..."
+echo "🚀 Implantando OpenSearch..."
 
 # Criar namespace apenas se não existir
 if kubectl get namespace observability >/dev/null 2>&1; then
@@ -32,4 +32,4 @@ echo "🚀 Configurando OpenTelemetry..."
 kubectl apply -f k8s/observability/open-telemetry.yml
 kubectl apply -f k8s/observability/instrumentation.yml
 
-echo "✅ OpenSearch, Dashboards e Jaeger (Tracing) prontos!"
+echo "✅ OpenSearch e Jaeger (Tracing) prontos!"
