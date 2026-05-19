@@ -26,10 +26,10 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: CATALOG_SERVICE_URL
-          value: "http://catalog-service.marketplace.svc.cluster.local:8081"
-        - name: SEARCH_SERVICE_URL
-          value: "http://search-service.marketplace.svc.cluster.local:8083"
+        - name: CATALOG_SERVICE_BASE_URL
+          value: "http://catalog-service.marketplace.svc.cluster.local:8081/api/v1"
+        - name: SEARCH_SERVICE_BASE_URL
+          value: "http://search-service.marketplace.svc.cluster.local:8083/api/v1"
         - name: CATALOG_SERVICE_TIMEOUT
           value: "2000"
         - name: SEARCH_SERVICE_TIMEOUT
