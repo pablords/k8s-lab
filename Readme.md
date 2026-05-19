@@ -1,203 +1,112 @@
-# k8s-lab
+# 🚀 Kubernetes Lab - Marketplace Search System Playbook
 
-Este repositório contém um ambiente Kubernetes completo utilizando **Minikube**, **MetalLB**, **Istio**, **Argo CD** e **Argo Rollouts** para gerenciamento e implantação progressiva de aplicações.
-
-## 🚀 Configuração Automática do Cluster
-
-Para configurar todo o ambiente automaticamente, execute:
-
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-O script **setup.sh** irá configurar todo o cluster Kubernetes, incluindo MetalLB, Istio, Argo CD e Argo Rollouts.
+Este repositório contém o ambiente Kubernetes completo, utilizando práticas recomendadas de produção para orquestração de microsserviços, GitOps de alta fidelidade e observabilidade correlacionada unificada.
 
 ---
 
-## 📌 Tecnologias Utilizadas
+## 📌 Arquitetura do Ecossistema
 
-- **Minikube** - Cria e gerencia um cluster Kubernetes local.
-- **MetalLB** - Load Balancer para Kubernetes local.
-- **Istio** - Service Mesh para controle de tráfego e segurança.
-- **Argo CD** - Gerenciamento de implantação GitOps.
-- **Argo Rollouts** - Estratégias avançadas de rollout para Kubernetes.
+O laboratório é baseado em um cluster **Minikube** multi-nós e exposto via **Istio Ingress Gateway** com roteamento de domínios dedicados resolvidos por IP do LoadBalancer (**MetalLB**).
+
+```mermaid
+graph TD
+    Client[Navegador / Cliente] -->|api.lab.com.br| Gateway[Istio Ingress Gateway]
+    Gateway -->|Roteamento Raiz /| APIGW[Go API Gateway]
+    
+    APIGW -->|/api/v1/catalog/*| Catalog[Catalog Service - Java/Spring]
+    APIGW -->|/api/v1/search/*| Search[Search Service - Java/Spring]
+    
+    Search -->|Gera Embeddings| Embed[Embedding Service - Python/FastAPI]
+    Search -->|Re-rankeia Candidatos| Rank[Ranking Service - Python/FastAPI]
+    Search -->|Consulta Índices| OS[OpenSearch - Logs / Métricas]
+    Search -->|Cache de Resultados| Redis[(Redis Cache)]
+    
+    Catalog -->|Persistência de Catálogo| DB[(PostgreSQL)]
+```
+
+### 🔹 Microsserviços e Aplicações expostas
+*   **Go API Gateway (`api-gateway`)**: Única aplicação externa exposta. Concentra a entrada do tráfego do sistema e distribui chamadas internamente.
+*   **Catalog Service (`catalog-service`)**: Rápida API Java baseada em Spring Boot gerenciando os produtos cadastrados.
+*   **Search Service (`search-service`)**: Motor inteligente Java orchestrando buscas semânticas vetoriais.
+*   **Indexing Service (`indexing-service`)**: Ingestor de alta performance consumindo dados em streaming.
+*   **Embedding Service (`embedding-service`)**: Serviço Python FastAPI gerando vetores densos usando modelos NLP.
+*   **Ranking Service (`ranking-service`)**: Classificador de relevância de busca executando inferência ML.
 
 ---
 
-## 🔥 Etapas do Setup
+## 🛠 Playbook de Instalação (Makefile)
 
-### 1️⃣ Iniciar Minikube
+O repositório disponibiliza um **Makefile** que funciona como seu orquestrador passo a passo.
 
-O cluster Kubernetes é iniciado com **2 nós**, **4 CPUs**, **10GB de Memória** e **10GB de disco**:
+### Targets Disponíveis
 
-```bash
-minikube start --nodes=2 --cpus=4 --memory=10000 --disk-size=10G --driver=docker --kubernetes-version=v1.28.3
-```
-
-### 2️⃣ Habilitar MetalLB
-
-MetalLB é ativado para fornecer suporte a LoadBalancer:
-
-```bash
-minikube addons enable metallb
-```
-
-O **intervalo de IPs** é configurado dinamicamente com base no IP do Minikube.
-
-### 3️⃣ Instalar Istio
-
-Baixa e instala o Istio no cluster:
-
-```bash
-curl -L https://istio.io/downloadIstio | sh -
-export PATH=$PWD/istio-1.24.2/bin:$PATH
-istioctl install --set profile=demo -y
-```
-
-O **Istio Gateway** é configurado para rotear tráfego:
-
-```bash
-kubectl apply -f k8s/config/istio/gateway.yml
-```
-
-### 4️⃣ Instalar Argo CD
-
-Instalação do Argo CD para gerenciamento de implantações:
-
-```bash
-kubectl create namespace argocd
-helm repo add argo https://argoproj.github.io/argo-helm
-helm repo update
-helm install argocd argo/argo-cd --namespace argocd
-kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-```
-
-A senha padrão do ArgoCD pode ser obtida com:
-
-```bash
-kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
-```
-
-### 5️⃣ Instalar Argo Rollouts
-
-Adiciona suporte a implantações canary e blue-green:
-
-```bash
-kubectl create namespace argo-rollouts
-helm install argo-rollouts argo/argo-rollouts --namespace argo-rollouts
-kubectl apply -f k8s/argo-rollouts/service.yml
-kubectl apply -f k8s/argo-rollouts/vs.yml
-```
-
-**Configuração do health check do Argo CD para Rollouts:**
-
-```bash
-kubectl patch configmap argocd-cm -n argocd --type merge -p '{"data": {"resource.customizations.health.argoproj.io_Rollout": "# Health check for Argo Rollouts\nhs = {} hs.status = \"Healthy\" if obj.status and obj.status.readyReplicas == obj.status.replicas else \"Progressing\"\nhs"}}'
-```
-
-**Reinicie o servidor do Argo CD para aplicar as configurações:**
-
-```bash
-kubectl rollout restart deployment argocd-server -n argocd
-```
-
-### 6️⃣ Implantar Aplicativos via Argo CD
-
-As aplicações backend, banco de dados e frontend são implantadas automaticamente via Argo CD:
-
-```bash
-kubectl apply -f apps/backend/parking/app.yml
-kubectl apply -f apps/data/db/app.yml
-kubectl apply -f apps/data/messaging/app.yml
-kubectl apply -f apps/frontend/nginx/app.yml
-```
+| Target | Comando | Descrição |
+| :--- | :--- | :--- |
+| `make prepare` | `bash scripts/01_prepare_cluster.sh` | Configura o Minikube (2 nós, 10GB RAM), ativa o **MetalLB** e instala o **Istio Service Mesh**. |
+| `make argo` | `bash scripts/02_install_argo.sh` | Instala o **Argo CD** para GitOps automatizado e o **Argo Rollouts** (implantações Canary/Blue-Green). |
+| `make certmanager-otel` | `bash scripts/03_install_certmanager_otel.sh` | Provisiona o **Cert-Manager** e os operadores nativos de **OpenTelemetry**. |
+| `make observability` | `bash scripts/04_install_opensearch_observability.sh`| Implanta o core de tracing e logs: **OpenSearch** e **Jaeger Tracing**. |
+| `make monitoring` | `bash scripts/05_install_prometheus_grafana_fluentbit.sh`| Implanta a infraestrutura de monitoramento nativo: **Prometheus**, **Grafana** e **Fluent-Bit**. |
+| `make deploy-marketplace` | `bash scripts/05_deploy_marketplace.sh` | Inicia o GitOps aplicando as definições declarativas do Marketplace via Argo CD. |
+| `make delete` | `minikube delete --all` | Destrói de forma limpa todas as instâncias e recursos locais criados. |
+| `make all` | Executa todos em ordem | Provisiona todo o laboratório de ponta a ponta em sequência. |
 
 ---
 
-## 🎯 **Acessando o Ambiente**
+## 🌐 Configuração de Acesso (DNS Local)
 
-### 🔹 **Acessar Argo CD**
-
-Obtenha o **IP Externo** do Argo CD:
-
-```bash
-kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-```
-
-Depois, acesse no navegador:
-
-```
-http://<EXTERNAL_IP>
-```
-
-Usuário: `admin`  
-Senha: Obtida pelo comando:
-
-```bash
-kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
-```
-
-### 🔹 **Acessar o Nginx**
-
-Obtenha o **EXTERNAL-IP** do Istio:
+Para acessar as aplicações de forma nativa a partir do seu sistema host, obtenha o IP do LoadBalancer atribuído pelo MetalLB ao gateway Istio:
 
 ```bash
 kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
-Acesse no navegador:
+Adicione o IP retornado ao seu arquivo `/etc/hosts` associando-o aos domínios definidos na arquitetura (exemplo com o IP `192.168.49.200`):
 
-```
-http://<EXTERNAL_IP>/frontend/nginx
-```
-
-### 🔹 **Gerenciar Argo Rollouts**
-
-Acesse o painel do Argo Rollouts com:
-
-```bash
-kubectl argo rollouts dashboard -n argo-rollouts
-```
-
-Valide o estado do Rollout:
-
-```bash
-kubectl argo rollouts get rollout nginx -n frontend
+```text
+192.168.49.200 api.lab.com.br argo.lab.com.br dashboards.lab.com.br grafana.lab.com.br
 ```
 
 ---
 
-## 🛠 **Testando um Deploy Canary**
+## 🔗 Endpoints de Aplicação
 
-Atualize a imagem do Nginx para uma nova versão:
+Após configurar o arquivo de hosts, você terá os seguintes pontos de acesso ativos:
 
-```bash
-kubectl argo rollouts set image nginx nginx=nginx:1.21 -n frontend
-```
-
-Isso iniciará um rollout gradual com pesos configurados (20% → 50% → 100%).
-
-**Acompanhe a progressão do rollout:**
-
-```bash
-kubectl argo rollouts get rollout nginx -n frontend --watch
-```
-
-Se precisar reverter para a versão estável anterior:
-
-```bash
-kubectl argo rollouts abort nginx -n frontend
-```
+*   **API Gateway (Entrada Única)**: `http://api.lab.com.br/`
+    *   *Endpoint de Busca*: `http://api.lab.com.br/api/v1/search/products?query=cadeira` (Retorna resultados de busca semântica em tempo real via OpenSearch e micro-serviços de ML).
+    *   *Actuator Health*: `http://api.lab.com.br/api/v1/health` (Saúde interna do gateway).
+*   **Painel Argo CD (GitOps)**: `http://argo.lab.com.br/`
+    *   Monitore a saúde e a sincronização contínua das aplicações declaradas.
+*   **OpenSearch Dashboards (Logs Centralizados)**: `http://dashboards.lab.com.br/`
+    *   Visualização direta dos índices de logs processados pelo Fluent-Bit.
+*   **Grafana (Painéis e Métricas)**: `http://grafana.lab.com.br/`
+    *   Acesso direto aos dashboards de monitoramento e análise de performance.
 
 ---
 
-## 🎉 **Conclusão**
+## 📊 SRE Centralized Unified Dashboard
 
-Agora você tem um ambiente Kubernetes **completo**, incluindo:
+Criado sob o padrão "Single Pane of Glass", o dashboard unificado do Grafana correlaciona os sinais vitais do sistema baseado na variável dinâmica `$service`.
 
-✅ **Gerenciamento GitOps com Argo CD**  
-✅ **Implantação progressiva com Argo Rollouts**  
-✅ **Balanceamento de carga com MetalLB**  
-✅ **Controle de tráfego e Service Mesh com Istio**  
+### Recursos Integrados:
+1.  **RED Signals**: Acompanhe o tráfego em tempo real (RPS - Requests Per Second), curvas de latência nos percentis mais críticos (P99, P95 e Média), e a taxa percentual de erros HTTP 5xx.
+2.  **Saturação de Recursos**: Gráficos cruzados de CPU e Memória comparando o consumo real do container com os limites da Namespace no Kubernetes.
+3.  **Logs Correlacionados**: Console interativo do OpenSearch embutido direto no painel com opção de filtragem rápida por Nível de Log (INFO, DEBUG, WARN, ERROR) e barras de pesquisa por texto.
+4.  **Incidentes de Tracing (Jaeger)**: Tabela contendo requisições com erros ou latência excessiva (>200ms) vinculadas diretamente ao `trace_id` correspondente para depuração profunda.
 
+### Tabs de Runtime Dedicadas (Métricas Internas):
+*   ☕ **JVM Runtime (Java)**: Gráficos de memória heap/non-heap, taxa de Garbage Collection (GC) e número de threads ativas (para `catalog-service`, `search-service` e `indexing-service`).
+*   🐹 **Go Runtime (Go)**: Acompanhamento de Goroutines ativas e alocação de memória de sistema (para o `api-gateway`).
+*   🐍 **Python Runtime (Python)**: Uso de memória virtual e residente do processo Unix, contagem de threads do FastAPI e taxa de CPU (para `ml-ranking-service` e `ml-embedding-service`).
+
+---
+
+## 🔄 Fluxo de Deploy Continuo (GitOps)
+
+O laboratório opera sob o paradigma GitOps através do Argo CD. O aplicativo `api-gateway` e as rotas Istio utilizam políticas de sincronização automáticas (`automated selfHeal & prune`):
+1.  Qualquer drift manual no cluster (como alterar uma rota temporariamente com `kubectl`) é detectado e **automaticamente revertido** para garantir a consistência do Git como única fonte da verdade.
+2.  Para realizar atualizações permanentes nas rotas ou configurações do gateway:
+    *   Realize a alteração localmente no arquivo do repositório correspondente.
+    *   Submeta e envie as modificações via Git (`git push origin marketplace`).
+    *   O Argo CD detectará a alteração e aplicará de forma imediata e limpa no cluster.

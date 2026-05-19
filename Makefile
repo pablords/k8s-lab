@@ -1,6 +1,6 @@
 # Makefile para orquestrar instalação do cluster passo a passo
 
-.PHONY: all prepare argo certmanager-otel elasticsearch deploy
+.PHONY: all prepare argo certmanager-otel observability monitoring deploy-marketplace delete help
 
 all: prepare argo certmanager-otel observability monitoring deploy-marketplace
 
@@ -40,8 +40,10 @@ help:
 	@echo "  make prepare            - Etapa 1: Preparar cluster (Minikube, MetalLB, Istio)"
 	@echo "  make argo               - Etapa 2: Instalar Argo CD e Rollouts"
 	@echo "  make certmanager-otel   - Etapa 3: Instalar cert-manager e OpenTelemetry Operator"
-	@echo "  make observability      - Etapa 4: Instalar Elasticsearch, Kibana e APM Server"
+	@echo "  make observability      - Etapa 4: Instalar OpenSearch, Dashboards e Jaeger"
+	@echo "  make monitoring         - Etapa 4.5: Instalar Prometheus, Grafana e Fluent-Bit"
 	@echo "  make deploy-marketplace - Etapa 5: Implantar ecossistema do Marketplace"
+	@echo "  make delete             - Deletar e destruir todo o cluster local"
 	@echo ""
 	@echo "Para executar tudo em sequência:"
 	@echo "  make all"
