@@ -32,9 +32,9 @@ spec:
           value: "redis.marketplace.svc.cluster.local"
         - name: REDIS_PORT
           value: "6379"
-        - name: ML_EMBEDDING_URL
+        - name: EMBEDDING_SERVICE_URL
           value: "http://ml-embedding-service.marketplace.svc.cluster.local:8085"
-        - name: ML_RANKING_URL
+        - name: ML_RANKING_SERVICE_URL
           value: "http://ml-ranking-service.marketplace.svc.cluster.local:8084"
         - name: OTEL_SERVICE_NAME
           value: "search-service"

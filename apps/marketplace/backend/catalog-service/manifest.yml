@@ -26,6 +26,12 @@ spec:
           value: "production"
         - name: DB_HOSTNAME
           value: "catalog-db.marketplace.svc.cluster.local"
+        - name: DB_HOSTNAME_CONTAINER
+          value: "catalog-db.marketplace.svc.cluster.local"
+        - name: DEBEZIUM_CONNECTOR_URL
+          value: "http://kafka-connect.marketplace.svc.cluster.local:8083/connectors"
+        - name: POSTGRES_TABLES
+          value: "public.products,public.product_metrics,public.brands,public.categories,public.sellers"
         - name: POSTGRES_PORT
           value: "5432"
         - name: POSTGRES_USER

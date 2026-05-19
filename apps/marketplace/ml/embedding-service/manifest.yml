@@ -15,6 +15,7 @@ spec:
       labels:
         app: ml-embedding-service
     spec:
+      nodeName: minikube
       containers:
       - name: ml-embedding-service
         image: marketplace/ml-embedding-service:latest

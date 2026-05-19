@@ -34,7 +34,7 @@ spec:
           value: "redis.marketplace.svc.cluster.local"
         - name: REDIS_PORT
           value: "6379"
-        - name: ML_EMBEDDING_URL
+        - name: EMBEDDING_SERVICE_URL
           value: "http://ml-embedding-service.marketplace.svc.cluster.local:8085"
         - name: OTEL_SERVICE_NAME
           value: "indexing-service"
@@ -54,7 +54,7 @@ spec:
           value: "com.marketplace.search.indexing.application.usecases.IndexProductUseCase[execute],com.marketplace.search.indexing.application.services.ProductEnrichmentService[enrich],com.marketplace.search.indexing.application.services.ProductFeatureCalculationService[calculate],com.marketplace.search.indexing.domain.services.FeatureExtractor[extract]"
         livenessProbe:
           httpGet:
-            path: /api/v1/actuator/health/liveness
+            path: /api/v1/actuator/health
             port: 8082
           initialDelaySeconds: 60
           periodSeconds: 30

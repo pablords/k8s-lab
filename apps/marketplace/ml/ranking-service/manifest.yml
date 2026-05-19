@@ -15,6 +15,7 @@ spec:
       labels:
         app: ml-ranking-service
     spec:
+      nodeName: minikube
       containers:
       - name: ml-ranking-service
         image: marketplace/ml-ranking-service:latest
