@@ -36,7 +36,7 @@ spec:
         - name: OPENSEARCH_PORT
           value: "9200"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "http://otel-collector.observability.svc.cluster.local:4318"
+          value: "http://otel-collector.observability.svc.cluster.local:4317"
         livenessProbe:
           httpGet:
             path: /health

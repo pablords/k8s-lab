@@ -1,0 +1,48 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+  memory_limiter:
+    limit_mib: 512
+    check_interval: 1s
+  filter:
+    error_mode: ignore
+    traces:
+      span:
+        - 'IsMatch(attributes["http.target"], ".*actuator.*")'
+        - 'attributes["db.system"] == "redis"'
+        - 'name == "PING"'
+        - 'name == "HELLO"'
+        - 'name == "CLIENT"'
+
+exporters:
+  otlp:
+    endpoint: jaeger-collector.observability:4317
+    tls:
+      insecure: true
+  logging:
+    loglevel: debug
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, filter, batch]
+      exporters: [otlp, logging]
+
+  extensions: [health_check]
+  telemetry:
+    logs:
+      level: debug

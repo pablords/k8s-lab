@@ -13,6 +13,6 @@ datasources:
       timeField: "@timestamp"
       version: "2.0.0"
       flavor: opensearch
-      logMessageField: log
+      logMessageField: message
       logLevelField: level
       maxConcurrentShardRequests: 5

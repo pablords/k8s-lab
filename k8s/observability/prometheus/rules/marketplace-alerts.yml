@@ -1,0 +1,156 @@
+groups:
+  - name: marketplace_search_alerts
+    interval: 30s
+    rules:
+      # API Gateway Alerts
+      - alert: HighAPIGatewayErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: api-gateway
+        annotations:
+          summary: "High error rate in API Gateway"
+          description: "API Gateway error rate is {{ $value }} errors/sec"
+
+      - alert: HighAPIGatewaySearchLatencyP99
+        expr: histogram_quantile(0.99, rate(api_gateway_http_request_duration_seconds_bucket{path=~"/api/v1/search.*"}[5m])) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+          service: api-gateway
+        annotations:
+          summary: "High Latency (P99) on Search API"
+          description: "P99 search latency > 800ms. Value is {{ $value }}s"
+
+      # Search Service Alerts
+      - alert: HighSearchServiceErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5..",application="search-service"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: search-service
+        annotations:
+          summary: "High error rate in Search Service"
+          description: "Search Service error rate is {{ $value }} errors/sec"
+
+      - alert: HighSearchLatency
+        expr: histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{application="search-service"}[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: search-service
+        annotations:
+          summary: "High search latency"
+          description: "P95 search latency is {{ $value }}s"
+
+      - alert: LowSearchCacheHitRate
+        expr: (rate(cache_hits_total{application="search-service"}[5m]) / rate(cache_requests_total{application="search-service"}[5m])) < 0.7
+        for: 10m
+        labels:
+          severity: info
+          service: search-service
+        annotations:
+          summary: "Low cache hit rate in Search Service"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}"
+
+      # Catalog Service Alerts
+      - alert: HighCatalogServiceErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5..",application="catalog-service"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: catalog-service
+        annotations:
+          summary: "High error rate in Catalog Service"
+          description: "Catalog Service error rate is {{ $value }} errors/sec"
+
+      # Indexing Service Alerts
+      - alert: HighKafkaConsumerLag
+        expr: kafka_consumer_lag_sum > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: indexing-service
+        annotations:
+          summary: "High Kafka consumer lag"
+          description: "Kafka consumer lag is {{ $value }} messages"
+
+      - alert: IndexingServiceDown
+        expr: up{job="indexing-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: indexing-service
+        annotations:
+          summary: "Indexing Service is down"
+          description: "Indexing Service has been down for more than 1 minute"
+
+      # ML Services Alerts
+      - alert: MLRankingServiceDown
+        expr: up{job="ml-ranking-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ml-ranking-service
+        annotations:
+          summary: "ML Ranking Service is down"
+          description: "ML Ranking Service has been down for more than 1 minute"
+
+      - alert: MLEmbeddingServiceDown
+        expr: up{job="ml-embedding-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ml-embedding-service
+        annotations:
+          summary: "ML Embedding Service is down"
+          description: "ML Embedding Service has been down for more than 1 minute"
+
+      # Datastores Alerts
+      - alert: RedisCacheHitRatioLow
+        expr: (rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))) < 0.6
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis Cache Hit Ratio < 60%"
+          description: "Cache efficiency dropped significantly"
+
+      - alert: PostgresHighConnections
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Postgres connection pool nearing exhaustion"
+          description: "Currently {{ $value }} active connections to Postgres."
+
+      - alert: ElasticsearchNodeRed
+        expr: elasticsearch_cluster_health_status{color="red"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Elasticsearch node is DOWN or RED"
+          description: "Cluster health is RED. Searches will fail."
+
+      # Infrastructure Alerts
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Container {{ $labels.name }} is using {{ $value | humanizePercentage }} of memory"
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is {{ $value | humanizePercentage }}"
+

@@ -1,0 +1,121 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'marketplace-search'
+    environment: 'development'
+
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Gateway (Go)
+  - job_name: 'api-gateway'
+    metrics_path: '/api/v1/metrics'
+    static_configs:
+      - targets: ['api-gateway.marketplace:8080']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Catalog Service
+  - job_name: 'catalog-service'
+    metrics_path: '/api/v1/actuator/prometheus'
+    static_configs:
+      - targets: ['catalog-service.marketplace:8081']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Search Service
+  - job_name: 'search-service'
+    metrics_path: '/api/v1/actuator/prometheus'
+    static_configs:
+      - targets: ['search-service.marketplace:8083']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Indexing Service
+  - job_name: 'indexing-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['indexing-service.marketplace:8082']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ML Ranking Service
+  - job_name: 'ml-ranking-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['ml-ranking-service.marketplace:8084']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ML Embedding Service
+  - job_name: 'ml-embedding-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['ml-embedding-service.marketplace:8085']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Traefik
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik.marketplace:8082']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # OpenSearch metrics (via elasticsearch_exporter)
+  - job_name: 'opensearch'
+    static_configs:
+      - targets: ['opensearch-exporter.observability:9114']
+    scrape_interval: 30s
+
+  # Redis metrics (via redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis.marketplace:9121']
+    scrape_interval: 30s
+  
+  # Kafka metrics (via kafka_exporter)
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka-exporter.marketplace:9308']
+    scrape_interval: 30s
+
+  # PostgreSQL metrics (via postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['catalog-db.marketplace:9187']
+    scrape_interval: 30s
+
+  # ML Services - probe HTTP via blackbox_exporter (nao expõem /metrics nativamente)
+  - job_name: 'ml-services-probe'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://ml-ranking-service.marketplace:8084/health
+          - http://ml-embedding-service.marketplace:8085/api/v1/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter.observability:9115
+
+  # Host Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter.observability:9100']
+
+  # Container Metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor.observability:8080']
