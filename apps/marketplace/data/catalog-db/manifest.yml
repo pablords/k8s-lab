@@ -33,6 +33,14 @@ spec:
           value: "catalog"
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        livenessProbe:
+          exec:
+            command: ["pg_isready", "-U", "catalog"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
       - name: postgres-exporter
         image: prometheuscommunity/postgres-exporter:v0.15.0
         imagePullPolicy: IfNotPresent
@@ -42,14 +50,6 @@ spec:
         ports:
         - containerPort: 9187
           name: scrape
-        volumeMounts:
-        - name: postgres-data
-          mountPath: /var/lib/postgresql/data
-        livenessProbe:
-          exec:
-            command: ["pg_isready", "-U", "catalog"]
-          initialDelaySeconds: 10
-          periodSeconds: 10
       volumes:
       - name: postgres-data
         emptyDir: {}
