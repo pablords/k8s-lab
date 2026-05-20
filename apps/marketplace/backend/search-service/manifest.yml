@@ -69,7 +69,7 @@ spec:
         - name: SPRING_OUTPUT_ANSI_ENABLED
           value: "NEVER"
         - name: OTEL_INSTRUMENTATION_METHODS_INCLUDE
-          value: "com.marketplace.search.search.domain.services.SearchDomainService[smartSearch,fetchAndValidateCandidates,applyBusinessRules,calculateBusinessBoost,searchWithFallback],com.marketplace.search.search.application.usecases.SearchProductsUseCase[execute],com.marketplace.search.search.infrastructure.opensearch.repositories.OpenSearchProductSearchRepository[search,searchCandidatesWithScores],com.marketplace.search.search.infrastructure.ml.MlRankingClient[rank],com.marketplace.search.search.infrastructure.embedding.EmbeddingClient[getEmbedding]"
+          value: "com.marketplace.search.search.domain.services.SearchDomainService[smartSearch,fetchAndValidateCandidates,applyBusinessRules,calculateBusinessBoost,searchWithFallback];com.marketplace.search.search.application.usecases.SearchProductsUseCase[execute];com.marketplace.search.search.infrastructure.opensearch.repositories.OpenSearchProductSearchRepository[search,searchCandidatesWithScores];com.marketplace.search.search.infrastructure.ml.MlRankingClient[rank];com.marketplace.search.search.infrastructure.embedding.EmbeddingClient[getEmbedding]"
         livenessProbe:
           httpGet:
             path: /api/v1/actuator/health
