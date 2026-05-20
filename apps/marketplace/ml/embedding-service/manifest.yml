@@ -6,7 +6,6 @@ metadata:
   labels:
     app: ml-embedding-service
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: ml-embedding-service

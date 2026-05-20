@@ -6,7 +6,6 @@ metadata:
   labels:
     app: ml-ranking-service
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: ml-ranking-service
