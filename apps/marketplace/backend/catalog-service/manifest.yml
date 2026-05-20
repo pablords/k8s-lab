@@ -25,6 +25,13 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8081
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
@@ -86,3 +93,23 @@ spec:
   ports:
   - port: 8081
     targetPort: 8081
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: catalog-service-hpa
+  namespace: marketplace
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: catalog-service
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80

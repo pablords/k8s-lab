@@ -25,6 +25,13 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
         env:
         - name: CATALOG_SERVICE_BASE_URL
           value: "http://catalog-service.marketplace.svc.cluster.local:8081/api/v1"
@@ -60,3 +67,23 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-hpa
+  namespace: marketplace
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80

@@ -26,6 +26,13 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8085
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
         env:
         - name: REDIS_HOST
           value: "redis.marketplace.svc.cluster.local"
@@ -55,3 +62,23 @@ spec:
   ports:
   - port: 8085
     targetPort: 8085
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ml-embedding-service-hpa
+  namespace: marketplace
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ml-embedding-service
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
