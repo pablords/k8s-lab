@@ -110,6 +110,60 @@
           "thresholds": { "mode": "absolute", "steps": [{ "value": 0, "color": "red" }, { "value": 1, "color": "green" }] }
         }
       }
+    },
+    {
+      "id": 5,
+      "title": "Quantidade de Pods por Aplicação",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"api-gateway\"}) or vector(0)",
+          "legendFormat": "API Gateway"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"catalog-service\"}) or vector(0)",
+          "legendFormat": "Catalog Service"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"indexing-service\"}) or vector(0)",
+          "legendFormat": "Indexing Service"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"search-service\"}) or vector(0)",
+          "legendFormat": "Search Service"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"ml-embedding-service\"}) or vector(0)",
+          "legendFormat": "ML Embedding"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(up{job=\"ml-ranking-service\"}) or vector(0)",
+          "legendFormat": "ML Ranking"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "stepAfter"
+          },
+          "decimals": 0
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      }
     }
   ]
 }
