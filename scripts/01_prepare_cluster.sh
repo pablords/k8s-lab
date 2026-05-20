@@ -15,6 +15,11 @@ minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=
 echo "✅ Habilitando MetalLB..."
 minikube addons enable metallb
 
+echo "⏳ Aguardando namespace metallb-system inicializar..."
+until kubectl get namespace metallb-system >/dev/null 2>&1; do
+  sleep 1
+done
+
 MINIKUBE_IP=$(minikube ip)
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
@@ -31,15 +36,38 @@ data:
       - ${MINIKUBE_IP%.*}.200-${MINIKUBE_IP%.*}.210
 EOF
 
-echo "📊 Iniciando Minikube Dashboard..."
-minikube dashboard &
+if ! pgrep -f "minikube dashboard" > /dev/null; then
+  echo "📊 Iniciando Minikube Dashboard..."
+  minikube dashboard &
+else
+  echo "✅ Minikube Dashboard já está rodando em segundo plano."
+fi
 
-echo "🛠 Instalando Istio..."
+echo "🛠 Preparando Istio..."
 ISTIO_VERSION="1.24.2"
-curl -L https://github.com/istio/istio/releases/download/$ISTIO_VERSION/istio-$ISTIO_VERSION-linux-amd64.tar.gz --output istio-$ISTIO_VERSION.tar.gz
-tar -xzf istio-$ISTIO_VERSION.tar.gz
+
+if [ ! -f "istio-$ISTIO_VERSION.tar.gz" ]; then
+  echo "📥 Baixando Istio $ISTIO_VERSION..."
+  curl -L "https://github.com/istio/istio/releases/download/$ISTIO_VERSION/istio-$ISTIO_VERSION-linux-amd64.tar.gz" --output "istio-$ISTIO_VERSION.tar.gz"
+else
+  echo "✅ Arquivo istio-$ISTIO_VERSION.tar.gz já existe. Pulando download."
+fi
+
+if [ ! -d "istio-$ISTIO_VERSION" ]; then
+  echo "📦 Extraindo Istio..."
+  tar -xzf "istio-$ISTIO_VERSION.tar.gz"
+else
+  echo "✅ Diretório istio-$ISTIO_VERSION já existe. Pulando extração."
+fi
+
 export PATH=$PWD/istio-$ISTIO_VERSION/bin:$PATH
-istioctl install --set profile=demo -y
+
+if kubectl get deployment -n istio-system istiod >/dev/null 2>&1; then
+  echo "✅ Istio já está instalado no cluster. Pulando instalação."
+else
+  echo "🛠 Instalando Istio no cluster..."
+  istioctl install --set profile=demo -y
+fi
 
 kubectl get svc -n istio-system istio-ingressgateway
 
@@ -59,27 +87,51 @@ IMAGES=(
   "marketplace/ml-embedding-service:latest"
 )
 
+# Sincroniza as tags locais do docker-compose (ranking-service / embedding) com as do k8s (ml-ranking-service / ml-embedding-service)
+if docker image inspect marketplace/embedding:latest >/dev/null 2>&1; then
+  echo "🔗 Sincronizando tag local de marketplace/embedding para marketplace/ml-embedding-service..."
+  docker tag marketplace/embedding:latest marketplace/ml-embedding-service:latest
+fi
+if docker image inspect marketplace/ranking-service:latest >/dev/null 2>&1; then
+  echo "🔗 Sincronizando tag local de marketplace/ranking-service para marketplace/ml-ranking-service..."
+  docker tag marketplace/ranking-service:latest marketplace/ml-ranking-service:latest
+fi
+
+# Obtém a lista de imagens já presentes no Minikube uma única vez para otimizar a busca
+LOADED_IMAGES=$(minikube image ls)
+
 for img in "${IMAGES[@]}"; do
-  echo "🔹 Carregando $img..."
   svc_name="${img#marketplace/}"
+  img_base="${img%:*}"
+  
+  # Verifica se a imagem já está no cache do Minikube (mesmo que com prefixo docker.io/)
+  if echo "$LOADED_IMAGES" | grep -q "$img_base"; then
+    echo "✅ Imagem $img já está presente no Minikube. Pulando..."
+    continue
+  fi
+  
+  echo "🔹 Carregando $img..."
   
   # 1. Tenta carregar diretamente via minikube
   if ! minikube image load "$img" --overwrite=true; then
     echo "⚠️ Falha no carregamento direto de $img. Usando fallback via tarball..."
     tmp_tar="/tmp/${img//\//_}.tar"
     
-    # 2. Tenta fazer o docker save com timeout de 30 segundos
-    if ! timeout 30s docker save -o "$tmp_tar" "$img"; then
-      echo "❌ Imagem local de $img está corrompida ou incompleta (blobs ausentes)."
-      echo "🔄 Tentando restaurar a imagem fazendo pull da versão oficial 'pablords/$svc_name'..."
+    # 2. Tenta fazer o docker save com timeout de 120 segundos (2 minutos)
+    if ! timeout 120s docker save -o "$tmp_tar" "$img"; then
+      echo "❌ Imagem local de $img está corrompida ou incompleta."
       
-      # 3. Pull da imagem oficial para curar a imagem local
-      docker pull "pablords/$svc_name"
-      docker tag "pablords/$svc_name" "$img"
-      
-      # 4. Refaz o export da imagem restaurada
-      echo "🔄 Refazendo o export da imagem restaurada..."
-      docker save -o "$tmp_tar" "$img"
+      # 3. Pull da imagem oficial para curar a imagem local se disponível
+      echo "🔄 Tentando baixar a versão oficial 'pablords/$svc_name' do Docker Hub..."
+      if docker pull "pablords/$svc_name"; then
+        docker tag "pablords/$svc_name" "$img"
+        echo "🔄 Refazendo o export da imagem restaurada..."
+        docker save -o "$tmp_tar" "$img"
+      else
+        echo "⚠️ Falha ao baixar 'pablords/$svc_name' do Docker Hub. Prosseguindo..."
+        rm -f "$tmp_tar"
+        continue
+      fi
     fi
     
     # 5. Carrega o tarball no Minikube e remove o arquivo temporário
