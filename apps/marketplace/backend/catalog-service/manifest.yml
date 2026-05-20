@@ -80,7 +80,7 @@ spec:
           httpGet:
             path: /api/v1/actuator/health
             port: 8081
-          initialDelaySeconds: 40
+          initialDelaySeconds: 120
           periodSeconds: 30
 ---
 apiVersion: v1
