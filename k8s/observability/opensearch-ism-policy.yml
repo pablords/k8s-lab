@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: opensearch-ism-setup
+  namespace: observability
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: ism-setup
+        image: curlimages/curl:8.6.0
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for OpenSearch to be healthy..."
+          until curl -sf http://opensearch:9200/_cluster/health; do sleep 5; done
+          echo "OpenSearch is healthy! Configuring ISM policies..."
+
+          # Logs retention policy (1d or 2GB max per index)
+          curl -s -X PUT "http://opensearch:9200/_plugins/_ism/policies/marketplace-logs-retention" \
+            -H 'Content-Type: application/json' -d '{
+            "policy": {
+              "description": "Retenção de 1d ou 2GB para logs do marketplace",
+              "default_state": "hot",
+              "states": [
+                {
+                  "name": "hot",
+                  "actions": [],
+                  "transitions": [
+                    {"state_name": "delete", "conditions": {"min_index_age": "1d"}},
+                    {"state_name": "delete", "conditions": {"min_index_size": "2gb"}}
+                  ]
+                },
+                {
+                  "name": "delete",
+                  "actions": [{"delete": {}}],
+                  "transitions": []
+                }
+              ],
+              "ism_template": [{"index_patterns": ["marketplace-logs-*"], "priority": 100}]
+            }
+          }'
+          echo "Created marketplace-logs-retention policy."
+
+          # Traces retention policy (1d or 2GB max per index)
+          curl -s -X PUT "http://opensearch:9200/_plugins/_ism/policies/jaeger-traces-retention" \
+            -H 'Content-Type: application/json' -d '{
+            "policy": {
+              "description": "Retenção de 1d ou 2GB para traces Jaeger",
+              "default_state": "hot",
+              "states": [
+                {
+                  "name": "hot",
+                  "actions": [],
+                  "transitions": [
+                    {"state_name": "delete", "conditions": {"min_index_age": "1d"}},
+                    {"state_name": "delete", "conditions": {"min_index_size": "2gb"}}
+                  ]
+                },
+                {
+                  "name": "delete",
+                  "actions": [{"delete": {}}],
+                  "transitions": []
+                }
+              ],
+              "ism_template": [{"index_patterns": ["jaeger-*"], "priority": 100}]
+            }
+          }'
+          echo "Created jaeger-traces-retention policy."
+          echo "ISM policies configured successfully!"

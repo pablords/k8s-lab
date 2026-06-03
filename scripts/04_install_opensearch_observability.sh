@@ -30,6 +30,9 @@ kubectl rollout status deployment/jaeger-query -n observability
 # Aplicar Collector e Instrumentation
 echo "🚀 Configurando OpenTelemetry..."
 kubectl apply -f k8s/observability/open-telemetry.yml
+
+# Criar namespace marketplace para o Instrumentation
+kubectl apply -f apps/marketplace/namespace.yml
 kubectl apply -f k8s/observability/instrumentation.yml
 
 echo "✅ OpenSearch e Jaeger (Tracing) prontos!"

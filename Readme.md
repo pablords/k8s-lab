@@ -43,11 +43,10 @@ O repositório disponibiliza um **Makefile** que funciona como seu orquestrador 
 | Target | Comando | Descrição |
 | :--- | :--- | :--- |
 | `make prepare` | `bash scripts/01_prepare_cluster.sh` | Configura o Minikube (2 nós, 10GB RAM), ativa o **MetalLB** e instala o **Istio Service Mesh**. |
-| `make argo` | `bash scripts/02_install_argo.sh` | Instala o **Argo CD** para GitOps automatizado e o **Argo Rollouts** (implantações Canary/Blue-Green). |
 | `make certmanager-otel` | `bash scripts/03_install_certmanager_otel.sh` | Provisiona o **Cert-Manager** e os operadores nativos de **OpenTelemetry**. |
 | `make observability` | `bash scripts/04_install_opensearch_observability.sh`| Implanta o core de tracing e logs: **OpenSearch** e **Jaeger Tracing**. |
 | `make monitoring` | `bash scripts/05_install_prometheus_grafana_fluentbit.sh`| Implanta a infraestrutura de monitoramento nativo: **Prometheus**, **Grafana** e **Fluent-Bit**. |
-| `make deploy-marketplace` | `bash scripts/05_deploy_marketplace.sh` | Inicia o GitOps aplicando as definições declarativas do Marketplace via Argo CD. |
+| `make deploy-marketplace` | `bash scripts/05_deploy_marketplace.sh` | Implantar as definições declarativas do Marketplace via `kubectl apply` diretamente. |
 | `make delete` | `minikube delete --all` | Destrói de forma limpa todas as instâncias e recursos locais criados. |
 | `make all` | Executa todos em ordem | Provisiona todo o laboratório de ponta a ponta em sequência. |
 
@@ -64,7 +63,7 @@ kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadB
 Adicione o IP retornado ao seu arquivo `/etc/hosts` associando-o aos domínios definidos na arquitetura (exemplo com o IP `192.168.49.200`):
 
 ```text
-192.168.49.200 api.lab.com.br argo.lab.com.br grafana.lab.com.br
+192.168.49.200 api.lab.com.br grafana.lab.com.br
 ```
 
 ---
@@ -76,8 +75,6 @@ Após configurar o arquivo de hosts, você terá os seguintes pontos de acesso a
 *   **API Gateway (Entrada Única)**: `http://api.lab.com.br/`
     *   *Endpoint de Busca*: `http://api.lab.com.br/api/v1/search/products?query=cadeira` (Retorna resultados de busca semântica em tempo real via OpenSearch e micro-serviços de ML).
     *   *Actuator Health*: `http://api.lab.com.br/api/v1/health` (Saúde interna do gateway).
-*   **Painel Argo CD (GitOps)**: `http://argo.lab.com.br/`
-    *   Monitore a saúde e a sincronização contínua das aplicações declaradas.
 *   **Grafana (Painéis e Métricas)**: `http://grafana.lab.com.br/`
     *   Acesso direto aos dashboards de monitoramento e análise de performance (incluindo logs centralizados correlacionados).
 
@@ -95,16 +92,16 @@ Criado sob o padrão "Single Pane of Glass", o dashboard unificado do Grafana co
 
 ### Tabs de Runtime Dedicadas (Métricas Internas):
 *   ☕ **JVM Runtime (Java)**: Gráficos de memória heap/non-heap, taxa de Garbage Collection (GC) e número de threads ativas (para `catalog-service`, `search-service` e `indexing-service`).
-*   🐹 **Go Runtime (Go)**: Acompanhamento de Goroutines ativas e alocação de memória de sistema (para o `api-gateway`).
+*   🐹 **Go Runtime (Go)**: Acompanhamento de Goroutines ativas e alocação de memória de sistema (para the `api-gateway`).
 *   🐍 **Python Runtime (Python)**: Uso de memória virtual e residente do processo Unix, contagem de threads do FastAPI e taxa de CPU (para `ml-ranking-service` e `ml-embedding-service`).
 
 ---
 
-## 🔄 Fluxo de Deploy Continuo (GitOps)
+## 🔄 Fluxo de Deploy Declarativo Direto
 
-O laboratório opera sob o paradigma GitOps através do Argo CD. O aplicativo `api-gateway` e as rotas Istio utilizam políticas de sincronização automáticas (`automated selfHeal & prune`):
-1.  Qualquer drift manual no cluster (como alterar uma rota temporariamente com `kubectl`) é detectado e **automaticamente revertido** para garantir a consistência do Git como única fonte da verdade.
-2.  Para realizar atualizações permanentes nas rotas ou configurações do gateway:
-    *   Realize a alteração localmente no arquivo do repositório correspondente.
-    *   Submeta e envie as modificações via Git (`git push origin marketplace`).
-    *   O Argo CD detectará a alteração e aplicará de forma imediata e limpa no cluster.
+O laboratório opera sob o paradigma de infraestrutura como código (IaC) e deploy declarativo via `kubectl`:
+1. Todas as definições de microsserviços estão estruturadas no diretório `apps/marketplace/` em arquivos `manifest.yml`.
+2. Para aplicar alterações permanentemente nas rotas ou configurações do gateway ou aplicações:
+   * Realize a alteração localmente no arquivo do manifesto correspondente.
+   * Aplique a alteração diretamente no cluster usando `kubectl apply -f apps/marketplace/<caminho_da_app>/manifest.yml` ou executando o target `make deploy-marketplace`.
+   * As atualizações serão implementadas e o Kubernetes executará o rolling update de forma transparente.

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-exporter
+  namespace: marketplace
+  labels:
+    app: kafka-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-exporter
+  template:
+    metadata:
+      labels:
+        app: kafka-exporter
+    spec:
+      containers:
+      - name: kafka-exporter
+        image: danielqsj/kafka-exporter:v1.7.0
+        args:
+        - --kafka.server=kafka-hs.kafka.svc.cluster.local:9092
+        - --kafka.version=3.4.0
+        ports:
+        - containerPort: 9308
+          name: metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-exporter
+  namespace: marketplace
+spec:
+  selector:
+    app: kafka-exporter
+  ports:
+  - port: 9308
+    targetPort: 9308
+    name: metrics

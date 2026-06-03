@@ -47,74 +47,78 @@
     },
     {
       "id": 3,
-      "title": "Total Reads/Writes Processed",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "title": "Connected Clients",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
       "targets": [
-        { "expr": "rate(redis_total_reads_processed[1m])", "legendFormat": "Reads/s", "refId": "A" },
-        { "expr": "rate(redis_total_writes_processed[1m])", "legendFormat": "Writes/s", "refId": "B" }
+        { "expr": "redis_connected_clients", "legendFormat": "Clients", "refId": "A" }
       ],
-      "fieldConfig": { "defaults": { "unit": "ops" } }
+      "fieldConfig": { "defaults": { "unit": "short" } }
     },
     {
       "id": 4,
-      "title": "Errors and Unexpected Replies",
+      "title": "Blocked Clients",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        { "expr": "redis_blocked_clients", "legendFormat": "Blocked", "refId": "A" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 5,
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "redis_memory_used_bytes", "legendFormat": "Used Memory", "refId": "A" },
+        { "expr": "redis_memory_max_bytes", "legendFormat": "Max Memory", "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 6,
+      "title": "Commands Rate",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
       "targets": [
-        { "expr": "rate(redis_total_error_replies[1m])", "legendFormat": "Total Errors/s", "refId": "A" },
-        { "expr": "rate(redis_unexpected_error_replies[1m])", "legendFormat": "Unexpected Errors/s", "refId": "B" },
-        { "expr": "redis_target_scrape_request_errors_total", "legendFormat": "Scrape Errors", "refId": "C" }
+        { "expr": "rate(redis_commands_processed_total[1m])", "legendFormat": "Commands/s", "refId": "A" }
       ],
       "fieldConfig": { "defaults": { "unit": "ops" } }
     },
     {
-      "id": 5,
-      "title": "Slow Log",
+      "id": 7,
+      "title": "Failed Commands Rate",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
       "targets": [
-        { "expr": "redis_slowlog_length", "legendFormat": "Slowlog Length", "refId": "A" },
-        { "expr": "redis_slowlog_last_id", "legendFormat": "Last Slowlog ID", "refId": "B" }
+        { "expr": "rate(redis_commands_failed_calls_total[1m])", "legendFormat": "Failed/s", "refId": "A" }
       ],
-      "fieldConfig": { "defaults": { "unit": "short" } }
-    },
-    {
-      "id": 6,
-      "title": "Blocking and Watched Keys",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
-      "targets": [
-        { "expr": "redis_total_blocking_keys", "legendFormat": "Blocking Keys", "refId": "A" },
-        { "expr": "redis_total_blocking_keys_on_nokey", "legendFormat": "Blocking Keys (no key)", "refId": "B" },
-        { "expr": "redis_total_watched_keys", "legendFormat": "Watched Keys", "refId": "C" }
-      ],
-      "fieldConfig": { "defaults": { "unit": "short" } }
-    },
-    {
-      "id": 7,
-      "title": "Tracking and Clients",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
-      "targets": [
-        { "expr": "redis_tracking_clients", "legendFormat": "Tracking Clients", "refId": "A" },
-        { "expr": "redis_watching_clients", "legendFormat": "Watching Clients", "refId": "B" },
-        { "expr": "redis_tracking_total_keys", "legendFormat": "Tracking Keys", "refId": "C" },
-        { "expr": "redis_tracking_total_items", "legendFormat": "Tracking Items", "refId": "D" },
-        { "expr": "redis_tracking_total_prefixes", "legendFormat": "Tracking Prefixes", "refId": "E" }
-      ],
-      "fieldConfig": { "defaults": { "unit": "short" } }
+      "fieldConfig": { "defaults": { "unit": "ops" } }
     },
     {
       "id": 8,
-      "title": "Replication and Expiry",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "title": "Keyspace Hit Ratio",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
       "targets": [
-        { "expr": "redis_second_repl_offset", "legendFormat": "Repl Offset", "refId": "A" },
-        { "expr": "redis_slave_expires_tracked_keys", "legendFormat": "Slave Expires Tracked Keys", "refId": "B" }
+        { "expr": "(rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))) * 100", "legendFormat": "Hit Ratio %", "refId": "A" }
       ],
-      "fieldConfig": { "defaults": { "unit": "short" } }
+      "fieldConfig": {
+        "defaults": {
+          "max": 100,
+          "min": 0,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        }
+      }
     }
   ],
   "refresh": "10s",

@@ -25,6 +25,8 @@ spec:
           value: "http://grafana.lab.com.br/"
         - name: GF_SERVER_SERVE_FROM_SUB_PATH
           value: "true"
+        - name: GF_LOG_FILTERS
+          value: "plugin.grafana-opensearch-datasource:debug"
         ports:
         - containerPort: 3000
         volumeMounts:

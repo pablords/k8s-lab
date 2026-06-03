@@ -4,7 +4,7 @@ datasources:
   - name: Jaeger
     type: jaeger
     access: proxy
-    url: http://marketplace-jaeger:16686/jaeger
+    url: http://jaeger-query.observability.svc.cluster.local:16686
     isDefault: false
     version: 1
     editable: true

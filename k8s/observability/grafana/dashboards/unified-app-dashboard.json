@@ -33,8 +33,15 @@
         "name": "search",
         "type": "textbox",
         "label": "Search Logs",
-        "query": "*",
-        "current": { "text": "*", "value": "*" }
+        "query": "",
+        "current": { "text": "", "value": "" }
+      },
+      {
+        "name": "correlation_id",
+        "type": "textbox",
+        "label": "Correlation ID (trace_id)",
+        "query": "",
+        "current": { "text": "", "value": "" }
       }
     ]
   },
@@ -48,7 +55,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "up{service=\"$service\"} or up{job=\"$service\"} or up{container=\"$service\"}",
+          "expr": "max(up{job=\"$service\"})",
           "instant": true
         }
       ],
@@ -82,7 +89,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(ALERTS{alertstate=\"firing\", service=\"$service\"}) or sum(ALERTS{alertstate=\"firing\", application=\"$service\"}) or vector(0)",
+          "expr": "sum(ALERTS{alertstate=\"firing\", job=\"$service\"}) or vector(0)",
           "instant": true
         }
       ],
@@ -113,7 +120,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "ALERTS{alertstate=\"firing\", service=\"$service\"} or ALERTS{alertstate=\"firing\", application=\"$service\"}",
+          "expr": "ALERTS{alertstate=\"firing\", job=\"$service\"}",
           "instant": true,
           "format": "table"
         }
@@ -131,18 +138,23 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(http_server_requests_seconds_count{application=\"$service\"}[5m]))",
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"$service\"}[5m]))",
           "legendFormat": "Java Request Rate (RPS)"
         },
         {
           "refId": "B",
-          "expr": "sum(rate(http_requests_total{service=\"$service\"}[5m]))",
+          "expr": "sum(rate(api_gateway_http_request_duration_seconds_count{job=\"$service\"}[5m]))",
           "legendFormat": "Go Gateway Request Rate (RPS)"
         },
         {
           "refId": "C",
-          "expr": "sum(rate(http_requests_total{job=\"$service\"}[5m]))",
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"$service\"}[5m]))",
           "legendFormat": "Python ML Request Rate (RPS)"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(rate(spring_kafka_listener_seconds_count{job=\"$service\"}[5m]))",
+          "legendFormat": "Kafka Message Rate (msg/s)"
         }
       ],
       "options": {
@@ -158,23 +170,28 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=\"$service\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{job=\"$service\"}[5m])) by (le))",
           "legendFormat": "Java P99 Latency"
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"$service\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"$service\"}[5m])) by (le))",
           "legendFormat": "Java P95 Latency"
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.99, sum(rate(api_gateway_http_request_duration_seconds_bucket{service=\"$service\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(api_gateway_http_request_duration_seconds_bucket{job=\"$service\"}[5m])) by (le))",
           "legendFormat": "Go P99 Latency"
         },
         {
           "refId": "D",
           "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"$service\"}[5m])) by (le))",
           "legendFormat": "Python ML P99 Latency"
+        },
+        {
+          "refId": "E",
+          "expr": "sum(spring_kafka_listener_seconds_max{job=\"$service\"})",
+          "legendFormat": "Kafka Consumer Max Latency"
         }
       ],
       "options": {
@@ -190,7 +207,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(rate(http_server_requests_seconds_count{status=~\"5..\", application=\"$service\"}[5m])) / sum(rate(http_server_requests_seconds_count{application=\"$service\"}[5m])) * 100) or (sum(rate(http_requests_total{status=~\"5..\", service=\"$service\"}[5m])) / sum(rate(http_requests_total{service=\"$service\"}[5m])) * 100) or vector(0)",
+          "expr": "(sum(rate(http_server_requests_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=\"$service\"}[5m])) * 100) or (sum(rate(http_request_duration_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"$service\"}[5m])) * 100) or (sum(rate(api_gateway_http_request_duration_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(api_gateway_http_request_duration_seconds_count{job=\"$service\"}[5m])) * 100) or vector(0)",
           "legendFormat": "HTTP 5xx Error Rate"
         }
       ],
@@ -219,13 +236,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=\"marketplace\", container=\"$service\"}) * 100",
-          "legendFormat": "Container CPU Usage (%)"
+          "expr": "(process_cpu_usage{job=\"$service\"} * 100) or (rate(process_cpu_seconds_total{job=\"$service\"}[5m]) * 100)",
+          "legendFormat": "Process CPU Usage (%)"
         },
         {
           "refId": "B",
-          "expr": "sum(container_memory_working_set_bytes{namespace=\"marketplace\", container=\"$service\"}) / (1024 * 1024)",
-          "legendFormat": "Container Memory Usage (MiB)"
+          "expr": "process_resident_memory_bytes{job=\"$service\"} / (1024 * 1024)",
+          "legendFormat": "Process Memory Usage (MiB)"
         }
       ],
       "options": {
@@ -241,9 +258,15 @@
       "targets": [
         {
           "refId": "A",
-          "query": "level:$level AND kubernetes.container_name:\"$service\" AND NOT kubernetes.container_name:*prometheus* $search",
-          "metrics": [{ "type": "logs", "id": "1" }],
-          "timeField": "@timestamp"
+          "datasource": { "type": "grafana-opensearch-datasource", "uid": "opensearch-logs" },
+          "query": "kubernetes.container_name:\"$service\"",
+          "alias": "",
+          "queryType": "lucene",
+          "format": "logs",
+          "metrics": [{ "type": "logs", "id": "1", "settings": { "limit": "500" } }],
+          "bucketAggs": [],
+          "timeField": "@timestamp",
+          "luceneQueryType": "Logs"
         }
       ],
       "options": {
@@ -256,32 +279,65 @@
     },
     {
       "id": 9,
-      "title": "🔍 Slow Telemetry Spans & Distributed Trace References",
+      "title": "🔍 Error Traces & Distributed Trace References",
       "type": "table",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
       "datasource": { "type": "grafana-opensearch-datasource", "uid": "opensearch-logs" },
       "targets": [
         {
           "refId": "A",
-          "query": "kubernetes.container_name:\"$service\" AND (level:ERROR OR duration:>200) AND trace_id:*",
-          "metrics": [{ "type": "count", "id": "1" }],
+          "datasource": { "type": "grafana-opensearch-datasource", "uid": "opensearch-logs" },
+          "query": "kubernetes.container_name:\"$service\" AND level:ERROR AND _exists_:trace_id",
+          "alias": "",
+          "queryType": "lucene",
+          "format": "logs",
+          "metrics": [{ "type": "logs", "id": "1", "settings": { "limit": "100" } }],
           "timeField": "@timestamp",
-          "bucketAggs": [
-            {
-              "type": "terms",
-              "field": "trace_id.keyword",
-              "id": "2",
-              "settings": { "size": "20", "order": "desc", "orderBy": "1" }
-            },
-            {
-              "type": "terms",
-              "field": "message.keyword",
-              "id": "3",
-              "settings": { "size": "1", "order": "desc", "orderBy": "1" }
-            }
-          ]
+          "luceneQueryType": "Logs"
         }
       ],
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "@timestamp",
+                "trace_id",
+                "message"
+              ]
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trace_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View Trace in Jaeger",
+                    "url": "/explore?left=%5B%22now-1h%22,%22now%22,%22Jaeger%22,%7B%22query%22:%22${__value.text}%22%7D%5D",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
       "options": {
         "showHeader": true
       }
@@ -303,17 +359,17 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(jvm_memory_used_bytes{application=\"$service\", area=\"heap\"}) / (1024 * 1024)",
+          "expr": "sum(jvm_memory_used_bytes{job=\"$service\", area=\"heap\"}) / (1024 * 1024)",
           "legendFormat": "Heap Used (MiB)"
         },
         {
           "refId": "B",
-          "expr": "sum(jvm_memory_max_bytes{application=\"$service\", area=\"heap\"}) / (1024 * 1024)",
+          "expr": "sum(jvm_memory_max_bytes{job=\"$service\", area=\"heap\"}) / (1024 * 1024)",
           "legendFormat": "Heap Max (MiB)"
         },
         {
           "refId": "C",
-          "expr": "sum(jvm_memory_used_bytes{application=\"$service\", area=\"nonheap\"}) / (1024 * 1024)",
+          "expr": "sum(jvm_memory_used_bytes{job=\"$service\", area=\"nonheap\"}) / (1024 * 1024)",
           "legendFormat": "Non-Heap Used (MiB)"
         }
       ]
@@ -327,12 +383,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(jvm_gc_pause_seconds_count{application=\"$service\"}[5m]))",
+          "expr": "sum(rate(jvm_gc_pause_seconds_count{job=\"$service\"}[5m]))",
           "legendFormat": "GC Count Rate /sec"
         },
         {
           "refId": "B",
-          "expr": "sum(rate(jvm_gc_pause_seconds_sum{application=\"$service\"}[5m])) * 1000",
+          "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=\"$service\"}[5m])) * 1000",
           "legendFormat": "GC Pause Duration (ms)"
         }
       ]
@@ -346,12 +402,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "jvm_threads_live_threads{application=\"$service\"}",
+          "expr": "jvm_threads_live_threads{job=\"$service\"}",
           "legendFormat": "Live Threads"
         },
         {
           "refId": "B",
-          "expr": "jvm_threads_peak_threads{application=\"$service\"}",
+          "expr": "jvm_threads_peak_threads{job=\"$service\"}",
           "legendFormat": "Peak Threads"
         }
       ]
@@ -373,7 +429,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "go_goroutines{service=\"$service\"}",
+          "expr": "go_goroutines{job=\"$service\"}",
           "legendFormat": "Goroutines count"
         }
       ]
@@ -387,12 +443,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "go_memstats_alloc_bytes{service=\"$service\"} / (1024 * 1024)",
+          "expr": "go_memstats_alloc_bytes{job=\"$service\"} / (1024 * 1024)",
           "legendFormat": "Allocated Memory (MiB)"
         },
         {
           "refId": "B",
-          "expr": "go_memstats_sys_bytes{service=\"$service\"} / (1024 * 1024)",
+          "expr": "go_memstats_sys_bytes{job=\"$service\"} / (1024 * 1024)",
           "legendFormat": "System Memory (MiB)"
         }
       ]

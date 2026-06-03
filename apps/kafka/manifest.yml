@@ -112,8 +112,24 @@ spec:
           image: bitnamilegacy/zookeeper:latest
           ports:
             - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: peer
+            - containerPort: 3888
+              name: leader-election
+          command:
+            - sh
+            - -c
+            - |
+              rm -rf /bitnami/zookeeper/data/*
+              POD_INDEX="${HOSTNAME##*-}"
+              export ZOO_SERVER_ID=$((POD_INDEX + 1))
+              export ZOO_SERVERS="zookeeper-0.zookeeper-hs.kafka.svc.cluster.local:2888:3888 zookeeper-1.zookeeper-hs.kafka.svc.cluster.local:2888:3888 zookeeper-2.zookeeper-hs.kafka.svc.cluster.local:2888:3888"
+              exec /entrypoint.sh /run.sh
           env:
             - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+            - name: ZOO_LISTEN_ALLIPS_ENABLED
               value: "yes"
           volumeMounts:
             - name: zookeeper-pvc
@@ -137,9 +153,17 @@ metadata:
   labels:
     app: zookeeper
 spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
   ports:
     - name: client
       port: 2181
+      protocol: TCP
+    - name: peer
+      port: 2888
+      protocol: TCP
+    - name: leader-election
+      port: 3888
       protocol: TCP
   selector:
     app: zookeeper

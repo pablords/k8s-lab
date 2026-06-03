@@ -33,6 +33,11 @@ data:
             - 'name == "PING"'
             - 'name == "HELLO"'
             - 'name == "CLIENT"'
+      attributes:
+        actions:
+          - key: correlation_id
+            from_attribute: http.request.header.x-correlation-id
+            action: insert
 
     exporters:
       otlp:
@@ -46,7 +51,7 @@ data:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, filter, batch]
+          processors: [memory_limiter, filter, attributes, batch]
           exporters: [otlp, logging]
 
       extensions: [health_check]

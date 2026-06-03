@@ -8,10 +8,11 @@ kubectl wait --for=condition=Ready pod --all -n observability --timeout=300s || 
 echo "🚀 Iniciando deploy da infraestrutura base e do Kafka..."
 kubectl apply -f apps/kafka/manifest.yml
 
-echo "🚀 Iniciando deploy do ecossistema Marketplace via ArgoCD..."
-find apps/marketplace -name "app.yml" -exec kubectl apply -f {} \;
+echo "🚀 Iniciando deploy do ecossistema Marketplace (aplicando manifestos diretamente)..."
+kubectl apply -f apps/marketplace/namespace.yml
+find apps/marketplace -name "manifest.yml" -exec kubectl apply -f {} \;
 
-echo "✅ Aplicações submetidas! Acompanhe o progresso no painel do ArgoCD."
+echo "✅ Aplicações submetidas!"
 
 EXTERNAL_IP=""
 while [ -z "$EXTERNAL_IP" ]; do
@@ -20,9 +21,7 @@ while [ -z "$EXTERNAL_IP" ]; do
   EXTERNAL_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 done
 
-ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
-
 echo "🎉 Tudo pronto!"
-echo "✅ Aponte $EXTERNAL_IP para *.lab.com.br no seu /etc/hosts (ex: api.lab.com.br, argo.lab.com.br)"
-echo "✅ ArgoCD: http://argo.lab.com.br/ (admin / senha: $ARGOCD_PASSWORD)"
+echo "✅ Aponte $EXTERNAL_IP para *.lab.com.br no seu /etc/hosts (ex: api.lab.com.br, grafana.lab.com.br)"
 echo "✅ API do Marketplace: http://api.lab.com.br/api/"
+echo "📊 Para acessar o Dashboard do Kubernetes, execute: make dashboard"

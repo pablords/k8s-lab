@@ -21,18 +21,28 @@ spec:
       nodeName: minikube
       containers:
       - name: ml-embedding-service
-        image: marketplace/ml-embedding-service:latest
+        image: 192.168.49.5:5000/marketplace/ml-embedding-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8085
         resources:
           requests:
-            cpu: 200m
-            memory: 256Mi
-          limits:
-            cpu: 1000m
+            cpu: 500m
             memory: 1Gi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
         env:
+        - name: OMP_NUM_THREADS
+          value: "1"
+        - name: MKL_NUM_THREADS
+          value: "1"
+        - name: OPENBLAS_NUM_THREADS
+          value: "1"
+        - name: VECLIB_MAXIMUM_THREADS
+          value: "1"
+        - name: NUMEXPR_NUM_THREADS
+          value: "1"
         - name: REDIS_HOST
           value: "redis.marketplace.svc.cluster.local"
         - name: REDIS_PORT
@@ -43,6 +53,10 @@ spec:
           value: "9200"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector.observability.svc.cluster.local:4317"
+        - name: OTEL_METRICS_EXPORTER
+          value: "none"
+        - name: OTEL_LOGS_EXPORTER
+          value: "none"
         livenessProbe:
           httpGet:
             path: /api/v1/health

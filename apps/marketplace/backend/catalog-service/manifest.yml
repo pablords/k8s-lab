@@ -20,17 +20,17 @@ spec:
     spec:
       containers:
       - name: catalog-service
-        image: marketplace/catalog-service:latest
-        imagePullPolicy: IfNotPresent
+        image: 192.168.49.5:5000/marketplace/catalog-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8081
         resources:
           requests:
             cpu: 200m
-            memory: 512Mi
+            memory: 256Mi
           limits:
             cpu: 1000m
-            memory: 1Gi
+            memory: 512Mi
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
@@ -64,6 +64,10 @@ spec:
           value: "none"
         - name: OTEL_LOGS_EXPORTER
           value: "none"
+        - name: LOGGING_PATTERN_LEVEL
+          value: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
+        - name: LOGGING_PATTERN_CONSOLE
+          value: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr([%thread]){magenta} %clr(%-5level){blue} %clr([%X{trace_id:-},%X{span_id:-}]){faint} %clr(%logger{36}){cyan} - %msg%n"
         - name: OTEL_INSTRUMENTATION_METHODS_INCLUDE
           value: "com.marketplace.search.catalog.application.usecases.CreateProductUseCase[execute]"
         - name: OTEL_HTTP_SERVER_EXCLUDED_PATHS
@@ -76,12 +80,26 @@ spec:
           value: "30000"
         - name: SPRING_OUTPUT_ANSI_ENABLED
           value: "NEVER"
+        startupProbe:
+          httpGet:
+            path: /api/v1/actuator/health
+            port: 8081
+          failureThreshold: 20
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /api/v1/actuator/health
             port: 8081
-          initialDelaySeconds: 120
+          initialDelaySeconds: 5
           periodSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/v1/actuator/health
+            port: 8081
+          initialDelaySeconds: 0
+          periodSeconds: 15
+          failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service

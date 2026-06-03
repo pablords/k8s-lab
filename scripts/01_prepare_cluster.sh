@@ -9,8 +9,8 @@ DRIVER=docker
 K8S_VERSION=v1.28.3
 IP=$(hostname -I | awk '{print $1}')
 
-echo "🚀 Iniciando Minikube..."
-minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION --apiserver-ips=$IP
+echo "🚀 Iniciando Minikube com suporte a Registro Inseguro (host.minikube.internal:5001)..."
+minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION --apiserver-ips=$IP --insecure-registry="host.minikube.internal:5001"
 
 echo "✅ Habilitando MetalLB..."
 minikube addons enable metallb
@@ -37,10 +37,64 @@ data:
 EOF
 
 if ! pgrep -f "minikube dashboard" > /dev/null; then
-  echo "📊 Iniciando Minikube Dashboard..."
+  echo "📊 Iniciando Minikube Dashboard em background..."
   minikube dashboard &
 else
   echo "✅ Minikube Dashboard já está rodando em segundo plano."
+fi
+
+# ─────────────────────────────────────────────────────────────────
+# Iniciar o registry local (se não existir)
+# ─────────────────────────────────────────────────────────────────
+echo "📦 Verificando container de registry local..."
+if ! docker container inspect registry >/dev/null 2>&1; then
+  echo "   🔹 Criando container registry na porta 5001..."
+  docker run -d -p 5001:5000 --restart=always --name registry registry:2
+else
+  if [ "$(docker inspect -f '{{.State.Running}}' registry)" != "true" ]; then
+    echo "   🔹 Iniciando container registry que estava parado..."
+    docker start registry
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────
+# Conectar o registry local à rede minikube e configurar insecure-
+# registry em todos os nós para que possam puxar imagens via IP.
+# ─────────────────────────────────────────────────────────────────
+echo "🔧 Conectando registry local à rede minikube..."
+if ! docker network inspect minikube 2>/dev/null | grep -q '"registry"'; then
+  docker network connect minikube registry 2>/dev/null || true
+fi
+
+REGISTRY_IP=$(docker inspect registry --format '{{.NetworkSettings.Networks.minikube.IPAddress}}' 2>/dev/null)
+if [ -z "$REGISTRY_IP" ]; then
+  echo "⚠️  Não foi possível obter o IP do registry na rede minikube. Pulando configuração dos nós."
+else
+  echo "✅ Registry acessível em $REGISTRY_IP:5000 na rede minikube."
+  DOCKER_EXEC_START="/usr/bin/dockerd -H tcp://0.0.0.0:2376 -H unix:///var/run/docker.sock --default-ulimit=nofile=1048576:1048576 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem --label provider=docker --insecure-registry 10.96.0.0/12 --insecure-registry host.minikube.internal:5001 --insecure-registry ${REGISTRY_IP}:5000"
+
+  for node in minikube minikube-m02 minikube-m03; do
+    echo "   🔹 Configurando insecure-registry em $node..."
+    minikube ssh -n "$node" "
+      sudo mkdir -p /etc/systemd/system/docker.service.d
+      sudo tee /etc/systemd/system/docker.service.d/insecure-registry.conf > /dev/null << 'DROPIN'
+[Service]
+ExecStart=
+ExecStart=${DOCKER_EXEC_START}
+DROPIN
+      sudo systemctl daemon-reload
+      sudo systemctl reset-failed docker 2>/dev/null || true
+      sudo systemctl restart docker
+    " && echo "   ✅ Docker reiniciado em $node" || echo "   ⚠️ Erro ao reiniciar Docker em $node"
+  done
+
+  echo "⏳ Aguardando cluster se recuperar após restart do Docker..."
+  sleep 20
+  until kubectl get nodes > /dev/null 2>&1; do
+    echo "   ⏳ API server ainda iniciando..."
+    sleep 10
+  done
+  echo "✅ Cluster pronto."
 fi
 
 echo "🛠 Preparando Istio..."
@@ -77,7 +131,7 @@ kubectl apply -f k8s/config/namespaces.yml
 echo "🌍 Aplicando Gateway Istio..."
 kubectl apply -f k8s/config/istio/gateway.yml
 
-echo "📦 Carregando imagens locais do Marketplace no Minikube..."
+echo "📦 Enviando imagens locais para o repositório local (Host Registry)..."
 IMAGES=(
   "marketplace/api-gateway:latest"
   "marketplace/catalog-service:latest"
@@ -97,48 +151,44 @@ if docker image inspect marketplace/ranking-service:latest >/dev/null 2>&1; then
   docker tag marketplace/ranking-service:latest marketplace/ml-ranking-service:latest
 fi
 
-# Obtém a lista de imagens já presentes no Minikube uma única vez para otimizar a busca
-LOADED_IMAGES=$(minikube image ls)
+total_imgs=${#IMAGES[@]}
+current_idx=0
 
 for img in "${IMAGES[@]}"; do
-  svc_name="${img#marketplace/}"
-  img_base="${img%:*}"
+  current_idx=$((current_idx + 1))
+  registry_tag="localhost:5001/$img"
   
-  # Verifica se a imagem já está no cache do Minikube (mesmo que com prefixo docker.io/)
-  if echo "$LOADED_IMAGES" | grep -q "$img_base"; then
-    echo "✅ Imagem $img já está presente no Minikube. Pulando..."
-    continue
-  fi
+  echo "🔹 [$current_idx/$total_imgs] Processando $img..."
   
-  echo "🔹 Carregando $img..."
-  
-  # 1. Tenta carregar diretamente via minikube
-  if ! minikube image load "$img" --overwrite=true; then
-    echo "⚠️ Falha no carregamento direto de $img. Usando fallback via tarball..."
-    tmp_tar="/tmp/${img//\//_}.tar"
-    
-    # 2. Tenta fazer o docker save com timeout de 120 segundos (2 minutos)
-    if ! timeout 120s docker save -o "$tmp_tar" "$img"; then
-      echo "❌ Imagem local de $img está corrompida ou incompleta."
-      
-      # 3. Pull da imagem oficial para curar a imagem local se disponível
-      echo "🔄 Tentando baixar a versão oficial 'pablords/$svc_name' do Docker Hub..."
-      if docker pull "pablords/$svc_name"; then
-        docker tag "pablords/$svc_name" "$img"
-        echo "🔄 Refazendo o export da imagem restaurada..."
-        docker save -o "$tmp_tar" "$img"
-      else
-        echo "⚠️ Falha ao baixar 'pablords/$svc_name' do Docker Hub. Prosseguindo..."
-        rm -f "$tmp_tar"
-        continue
-      fi
+  # Garante que a imagem local existe (ou tenta baixar do Hub como fallback)
+  if ! docker image inspect "$img" >/dev/null 2>&1; then
+    svc_name="${img#marketplace/}"
+    echo "   ⚠️ Imagem local $img não encontrada. Buscando 'pablords/$svc_name' no Docker Hub..."
+    if docker pull "pablords/$svc_name"; then
+      docker tag "pablords/$svc_name" "$img"
+    else
+      echo "   ❌ Falha ao baixar 'pablords/$svc_name' do Docker Hub. Pulando..."
+      continue
     fi
-    
-    # 5. Carrega o tarball no Minikube e remove o arquivo temporário
-    minikube image load "$tmp_tar" --overwrite=true
-    rm -f "$tmp_tar"
   fi
-  echo "✅ Imagem $img carregada com sucesso!"
+  
+  # Taggea para o registro local
+  echo "   🔗 Taggeando como $registry_tag..."
+  docker tag "$img" "$registry_tag"
+  
+  # Faz o push para o registro local
+  echo "   🚀 Enviando para o Host Registry..."
+  if docker push "$registry_tag" >/dev/null 2>&1; then
+    echo "   ✅ Imagem $img enviada com sucesso para o Host Registry!"
+  else
+    # Tenta novamente exibindo saída em caso de falha silenciosa
+    echo "   ⚠️ Falha silenciosa. Tentando novamente com logs detalhados..."
+    if docker push "$registry_tag"; then
+      echo "   ✅ Imagem $img enviada com sucesso para o Host Registry!"
+    else
+      echo "   ❌ Erro ao enviar a imagem $img para o registro local."
+    fi
+  fi
 done
 
 echo "✅ Cluster preparado!"

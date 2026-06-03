@@ -2,7 +2,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
   name: instrumentation
-  namespace: backend
+  namespace: marketplace
 spec:
   exporter:
     endpoint: http://otel-collector:4317
@@ -17,24 +17,3 @@ spec:
     image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs:latest
   nginx:
     image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nginx:latest
-
-
----
-
-apiVersion: opentelemetry.io/v1alpha1
-kind: Instrumentation
-metadata:
-  name: instrumentation
-  namespace: frontend
-spec:
-  exporter:
-    endpoint: http://otel-collector:4317
-  propagators:
-    - tracecontext
-    - baggage
-  sampler:
-    type: parentbased_always_on
-  java:
-    image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:latest
-  nodejs:
-    image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs:latest

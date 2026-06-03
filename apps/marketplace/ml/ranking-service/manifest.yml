@@ -21,7 +21,7 @@ spec:
       nodeName: minikube
       containers:
       - name: ml-ranking-service
-        image: marketplace/ml-ranking-service:latest
+        image: 192.168.49.5:5000/marketplace/ml-ranking-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8084
@@ -43,6 +43,10 @@ spec:
           value: "9200"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector.observability.svc.cluster.local:4317"
+        - name: OTEL_METRICS_EXPORTER
+          value: "none"
+        - name: OTEL_LOGS_EXPORTER
+          value: "none"
         livenessProbe:
           httpGet:
             path: /health
