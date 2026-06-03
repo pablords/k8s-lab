@@ -1,320 +1,786 @@
 {
-  "title": "Marketplace - SRE Unified Application Dashboard",
-  "uid": "sre-unified-app",
-  "tags": ["marketplace", "sre", "unified", "observability"],
-  "timezone": "browser",
-  "schemaVersion": 38,
-  "version": 1,
-  "refresh": "10s",
-  "time": { "from": "now-1h", "to": "now" },
-  "templating": {
+  "annotations": {
     "list": [
       {
-        "name": "service",
-        "type": "query",
-        "label": "Application / Service",
-        "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "definition": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|opensearch|blackbox-exporter|redis|kafka|postgres\"}, job)",
-        "query": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|opensearch|blackbox-exporter|redis|kafka|postgres\"}, job)",
-        "multi": false,
-        "includeAll": false,
-        "current": { "text": "catalog-service", "value": "catalog-service" }
-      },
-      {
-        "name": "level",
-        "type": "custom",
-        "label": "Log Level",
-        "query": "DEBUG,INFO,WARN,ERROR",
-        "multi": false,
-        "includeAll": true,
-        "current": { "text": "All", "value": "*" }
-      },
-      {
-        "name": "search",
-        "type": "textbox",
-        "label": "Search Logs",
-        "query": "",
-        "current": { "text": "", "value": "" }
-      },
-      {
-        "name": "correlation_id",
-        "type": "textbox",
-        "label": "Correlation ID (trace_id)",
-        "query": "",
-        "current": { "text": "", "value": "" }
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
       }
     ]
   },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "liveNow": false,
   "panels": [
     {
-      "id": 1,
-      "title": "App Health State",
-      "type": "stat",
-      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(up{job=\"$service\"})",
-          "instant": true
-        }
-      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "type": "special", "options": { "match": "null", "result": { "text": "UNKNOWN", "color": "gray" } } },
-            { "type": "value", "options": { "1": { "text": "ONLINE / HEALTHY", "color": "green" }, "0": { "text": "OFFLINE / UNHEALTHY", "color": "red" } } }
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "color": "gray",
+                  "text": "UNKNOWN"
+                }
+              },
+              "type": "special"
+            },
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "OFFLINE / UNHEALTHY"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "ONLINE / HEALTHY"
+                }
+              },
+              "type": "value"
+            }
           ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "green", "value": 1 }
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
             ]
           }
         }
       },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center"
-      }
-    },
-    {
-      "id": 2,
-      "title": "Active Firing Alerts",
-      "type": "stat",
-      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(ALERTS{alertstate=\"firing\", job=\"$service\"}) or vector(0)",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "orange", "value": 1 },
-              { "color": "red", "value": 3 }
-            ]
-          }
-        }
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 0
       },
+      "id": 1,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
-        "justifyMode": "center"
-      }
-    },
-    {
-      "id": 3,
-      "title": "Active Alert List Details",
-      "type": "table",
-      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
       "targets": [
         {
-          "refId": "A",
-          "expr": "ALERTS{alertstate=\"firing\", job=\"$service\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(up{job=\"$service\"})",
           "instant": true,
-          "format": "table"
+          "refId": "A"
         }
       ],
-      "options": {
-        "showHeader": true
-      }
+      "title": "App Health State",
+      "type": "stat"
     },
     {
-      "id": 4,
-      "title": "📈 Traffic (Request Rate - RPS)",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 4 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(rate(http_server_requests_seconds_count{job=\"$service\"}[5m]))",
-          "legendFormat": "Java Request Rate (RPS)"
-        },
-        {
-          "refId": "B",
-          "expr": "sum(rate(api_gateway_http_request_duration_seconds_count{job=\"$service\"}[5m]))",
-          "legendFormat": "Go Gateway Request Rate (RPS)"
-        },
-        {
-          "refId": "C",
-          "expr": "sum(rate(http_request_duration_seconds_count{job=\"$service\"}[5m]))",
-          "legendFormat": "Python ML Request Rate (RPS)"
-        },
-        {
-          "refId": "D",
-          "expr": "sum(rate(spring_kafka_listener_seconds_count{job=\"$service\"}[5m]))",
-          "legendFormat": "Kafka Message Rate (msg/s)"
-        }
-      ],
-      "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" }
-      }
-    },
-    {
-      "id": 5,
-      "title": "⏱️ Latency (P99, P95, Mean)",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 4 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{job=\"$service\"}[5m])) by (le))",
-          "legendFormat": "Java P99 Latency"
-        },
-        {
-          "refId": "B",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"$service\"}[5m])) by (le))",
-          "legendFormat": "Java P95 Latency"
-        },
-        {
-          "refId": "C",
-          "expr": "histogram_quantile(0.99, sum(rate(api_gateway_http_request_duration_seconds_bucket{job=\"$service\"}[5m])) by (le))",
-          "legendFormat": "Go P99 Latency"
-        },
-        {
-          "refId": "D",
-          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"$service\"}[5m])) by (le))",
-          "legendFormat": "Python ML P99 Latency"
-        },
-        {
-          "refId": "E",
-          "expr": "sum(spring_kafka_listener_seconds_max{job=\"$service\"})",
-          "legendFormat": "Kafka Consumer Max Latency"
-        }
-      ],
-      "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" }
-      }
-    },
-    {
-      "id": 6,
-      "title": "🚨 Error Rate Percentage (%)",
-      "type": "gauge",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 4 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(sum(rate(http_server_requests_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=\"$service\"}[5m])) * 100) or (sum(rate(http_request_duration_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"$service\"}[5m])) * 100) or (sum(rate(api_gateway_http_request_duration_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(api_gateway_http_request_duration_seconds_count{job=\"$service\"}[5m])) * 100) or vector(0)",
-          "legendFormat": "HTTP 5xx Error Rate"
-        }
-      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "min": 0,
-          "max": 100,
-          "unit": "percent",
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "orange", "value": 1 },
-              { "color": "red", "value": 5 }
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
             ]
           }
         }
-      }
-    },
-    {
-      "id": 7,
-      "title": "📊 Container Resource Saturation (CPU / Memory)",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(process_cpu_usage{job=\"$service\"} * 100) or (rate(process_cpu_seconds_total{job=\"$service\"}[5m]) * 100)",
-          "legendFormat": "Process CPU Usage (%)"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        {
-          "refId": "B",
-          "expr": "process_resident_memory_bytes{job=\"$service\"} / (1024 * 1024)",
-          "legendFormat": "Process Memory Usage (MiB)"
-        }
-      ],
-      "options": {
-        "legend": { "displayMode": "list", "placement": "right" }
-      }
-    },
-    {
-      "id": 8,
-      "title": "📝 Integrated Application Log Stream",
-      "type": "logs",
-      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 20 },
-      "datasource": { "type": "grafana-opensearch-datasource", "uid": "opensearch-logs" },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
       "targets": [
         {
-          "refId": "A",
-          "datasource": { "type": "grafana-opensearch-datasource", "uid": "opensearch-logs" },
-          "query": "kubernetes.container_name:\"$service\"",
-          "alias": "",
-          "queryType": "lucene",
-          "format": "logs",
-          "metrics": [{ "type": "logs", "id": "1", "settings": { "limit": "500" } }],
-          "bucketAggs": [],
-          "timeField": "@timestamp",
-          "luceneQueryType": "Logs"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(ALERTS{alertstate=\"firing\", job=\"$service\"}) or vector(0)",
+          "instant": true,
+          "refId": "A"
         }
       ],
-      "options": {
-        "dedupStrategy": "none",
-        "showLabels": true,
-        "showTime": true,
-        "wrapLogMessage": true,
-        "sortOrder": "Descending"
-      }
+      "title": "Active Firing Alerts",
+      "type": "stat"
     },
     {
-      "id": 9,
-      "title": "🔍 Error Traces & Distributed Trace References",
-      "type": "table",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
-      "datasource": { "type": "grafana-opensearch-datasource", "uid": "opensearch-logs" },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "grafana-opensearch-datasource", "uid": "opensearch-logs" },
-          "query": "kubernetes.container_name:\"$service\" AND level:ERROR AND _exists_:trace_id",
-          "alias": "",
-          "queryType": "lucene",
-          "format": "logs",
-          "metrics": [{ "type": "logs", "id": "1", "settings": { "limit": "100" } }],
-          "timeField": "@timestamp",
-          "luceneQueryType": "Logs"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "@timestamp",
-                "trace_id",
-                "message"
-              ]
-            }
-          }
-        }
-      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
             "align": "auto",
-            "displayMode": "auto"
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ALERTS{alertstate=\"firing\", job=\"$service\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Active Alert List Details",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"$service\"}[5m]))",
+          "legendFormat": "Java Request Rate (RPS)",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(api_gateway_http_request_duration_seconds_count{job=\"$service\"}[5m]))",
+          "legendFormat": "Go Gateway Request Rate (RPS)",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"$service\"}[5m]))",
+          "legendFormat": "Python ML Request Rate (RPS)",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(spring_kafka_listener_seconds_count{job=\"$service\"}[5m]))",
+          "legendFormat": "Kafka Message Rate (msg/s)",
+          "refId": "D"
+        }
+      ],
+      "title": "\ud83d\udcc8 Traffic (Request Rate - RPS)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{job=\"$service\"}[5m])) by (le))",
+          "legendFormat": "Java P99 Latency",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"$service\"}[5m])) by (le))",
+          "legendFormat": "Java P95 Latency",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum(rate(api_gateway_http_request_duration_seconds_bucket{job=\"$service\"}[5m])) by (le))",
+          "legendFormat": "Go P99 Latency",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"$service\"}[5m])) by (le))",
+          "legendFormat": "Python ML P99 Latency",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(spring_kafka_listener_seconds_max{job=\"$service\"})",
+          "legendFormat": "Kafka Consumer Max Latency",
+          "refId": "E"
+        }
+      ],
+      "title": "\u23f1\ufe0f Latency (P99, P95, Mean)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "barShape": "flat",
+        "barWidthFactor": 0.5,
+        "effects": {
+          "barGlow": false,
+          "centerGlow": false,
+          "gradient": true
+        },
+        "endpointMarker": "point",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "segmentCount": 1,
+        "segmentSpacing": 0.3,
+        "shape": "gauge",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "sparkline": true,
+        "textMode": "auto"
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(http_server_requests_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=\"$service\"}[5m])) * 100) or (sum(rate(http_request_duration_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"$service\"}[5m])) * 100) or (sum(rate(api_gateway_http_request_duration_seconds_count{status=~\"5..\", job=\"$service\"}[5m])) / sum(rate(api_gateway_http_request_duration_seconds_count{job=\"$service\"}[5m])) * 100) or vector(0)",
+          "legendFormat": "HTTP 5xx Error Rate",
+          "refId": "A"
+        }
+      ],
+      "title": "\ud83d\udea8 Error Rate Percentage (%)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(process_cpu_usage{job=\"$service\"} * 100) or (rate(process_cpu_seconds_total{job=\"$service\"}[5m]) * 100)",
+          "legendFormat": "Process CPU Usage (%)",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "process_resident_memory_bytes{job=\"$service\"} / (1024 * 1024)",
+          "legendFormat": "Process Memory Usage (MiB)",
+          "refId": "B"
+        }
+      ],
+      "title": "\ud83d\udcca Container Resource Saturation (CPU / Memory)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-opensearch-datasource",
+        "uid": "opensearch-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [],
+          "datasource": {
+            "type": "grafana-opensearch-datasource",
+            "uid": "opensearch-logs"
+          },
+          "format": "logs",
+          "luceneQueryType": "RawDocument",
+          "metrics": [
+            {
+              "id": "1",
+              "settings": {
+                "order": "desc",
+                "size": "500",
+                "useTimeRange": true
+              },
+              "type": "raw_document"
+            }
+          ],
+          "query": "kubernetes.container_name:\"$service\"",
+          "queryType": "lucene",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "\ud83d\udcdd Integrated Application Log Stream",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "jaeger",
+        "uid": "PC9A941E8F2E49454"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           }
         },
         "overrides": [
@@ -328,9 +794,9 @@
                 "id": "links",
                 "value": [
                   {
+                    "targetBlank": true,
                     "title": "View Trace in Jaeger",
-                    "url": "/explore?left=%5B%22now-1h%22,%22now%22,%22Jaeger%22,%7B%22query%22:%22${__value.text}%22%7D%5D",
-                    "targetBlank": true
+                    "url": "/explore?left=%5B%22now-1h%22,%22now%22,%22Jaeger%22,%7B%22query%22:%22${__value.text}%22%7D%5D"
                   }
                 ]
               }
@@ -338,175 +804,445 @@
           }
         ]
       },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 9,
       "options": {
+        "cellHeight": "sm",
         "showHeader": true
-      }
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "jaeger",
+            "uid": "PC9A941E8F2E49454"
+          },
+          "queryType": "search",
+          "refId": "A",
+          "service": "$service",
+          "tags": "error=true"
+        }
+      ],
+      "title": "\ud83d\udd0d Error Traces & Distributed Trace References",
+      "type": "table"
     },
     {
-      "id": 10,
-      "title": "☕ JVM Runtime Health (Java)",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 40 },
       "collapsed": false,
-      "panels": []
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 21,
+      "title": "\u2615 JVM Runtime Health (Java)",
+      "type": "row"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 41
+      },
       "id": 11,
-      "title": "JVM Memory Heap & Non-Heap Usage",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 41 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(jvm_memory_used_bytes{job=\"$service\", area=\"heap\"}) / (1024 * 1024)",
-          "legendFormat": "Heap Used (MiB)"
+          "legendFormat": "Heap Used (MiB)",
+          "refId": "A"
         },
         {
-          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(jvm_memory_max_bytes{job=\"$service\", area=\"heap\"}) / (1024 * 1024)",
-          "legendFormat": "Heap Max (MiB)"
+          "legendFormat": "Heap Max (MiB)",
+          "refId": "B"
         },
         {
-          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(jvm_memory_used_bytes{job=\"$service\", area=\"nonheap\"}) / (1024 * 1024)",
-          "legendFormat": "Non-Heap Used (MiB)"
+          "legendFormat": "Non-Heap Used (MiB)",
+          "refId": "C"
         }
-      ]
+      ],
+      "title": "JVM Memory Heap & Non-Heap Usage",
+      "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 41
+      },
       "id": 12,
-      "title": "JVM Garbage Collection Rate & Count",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 41 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(jvm_gc_pause_seconds_count{job=\"$service\"}[5m]))",
-          "legendFormat": "GC Count Rate /sec"
+          "legendFormat": "GC Count Rate /sec",
+          "refId": "A"
         },
         {
-          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=\"$service\"}[5m])) * 1000",
-          "legendFormat": "GC Pause Duration (ms)"
+          "legendFormat": "GC Pause Duration (ms)",
+          "refId": "B"
         }
-      ]
+      ],
+      "title": "JVM Garbage Collection Rate & Count",
+      "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 41
+      },
       "id": 13,
-      "title": "JVM Thread Count & States",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 41 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "jvm_threads_live_threads{job=\"$service\"}",
-          "legendFormat": "Live Threads"
+          "legendFormat": "Live Threads",
+          "refId": "A"
         },
         {
-          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "jvm_threads_peak_threads{job=\"$service\"}",
-          "legendFormat": "Peak Threads"
+          "legendFormat": "Peak Threads",
+          "refId": "B"
         }
-      ]
+      ],
+      "title": "JVM Thread Count & States",
+      "type": "timeseries"
     },
     {
-      "id": 14,
-      "title": "🐹 Go Runtime Health (Go)",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 47 },
       "collapsed": false,
-      "panels": []
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 22,
+      "title": "\ud83d\udc39 Go Runtime Health (Go)",
+      "type": "row"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
       "id": 15,
-      "title": "Go Goroutines Activity",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 48 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "go_goroutines{job=\"$service\"}",
-          "legendFormat": "Goroutines count"
+          "legendFormat": "Goroutines count",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Go Goroutines Activity",
+      "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      },
       "id": 16,
-      "title": "Go Memory Stats",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 48 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "go_memstats_alloc_bytes{job=\"$service\"} / (1024 * 1024)",
-          "legendFormat": "Allocated Memory (MiB)"
+          "legendFormat": "Allocated Memory (MiB)",
+          "refId": "A"
         },
         {
-          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "go_memstats_sys_bytes{job=\"$service\"} / (1024 * 1024)",
-          "legendFormat": "System Memory (MiB)"
+          "legendFormat": "System Memory (MiB)",
+          "refId": "B"
         }
-      ]
+      ],
+      "title": "Go Memory Stats",
+      "type": "timeseries"
     },
     {
-      "id": 17,
-      "title": "🐍 Python Runtime Health (Python)",
-      "type": "row",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 54 },
       "collapsed": false,
-      "panels": []
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 23,
+      "title": "\ud83d\udc0d Python Runtime Health (Python)",
+      "type": "row"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 55
+      },
       "id": 18,
-      "title": "Python Process Resident & Virtual Memory",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 55 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "process_resident_memory_bytes{job=\"$service\"} / (1024 * 1024)",
-          "legendFormat": "Resident Memory (MiB)"
+          "legendFormat": "Resident Memory (MiB)",
+          "refId": "A"
         },
         {
-          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "process_virtual_memory_bytes{job=\"$service\"} / (1024 * 1024)",
-          "legendFormat": "Virtual Memory (MiB)"
+          "legendFormat": "Virtual Memory (MiB)",
+          "refId": "B"
         }
-      ]
+      ],
+      "title": "Python Process Resident & Virtual Memory",
+      "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 55
+      },
       "id": 19,
-      "title": "Python Process Threads Count",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 55 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "process_threads{job=\"$service\"}",
-          "legendFormat": "Threads Count"
+          "legendFormat": "Threads Count",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Python Process Threads Count",
+      "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 55
+      },
       "id": 20,
-      "title": "Python Process CPU Rate",
-      "type": "timeseries",
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 55 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {},
+      "pluginVersion": "",
       "targets": [
         {
-          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "rate(process_cpu_seconds_total{job=\"$service\"}[5m]) * 100",
-          "legendFormat": "CPU Usage (%)"
+          "legendFormat": "CPU Usage (%)",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Python Process CPU Rate",
+      "type": "timeseries"
     }
-  ]
+  ],
+  "preload": false,
+  "refresh": "10s",
+  "schemaVersion": 42,
+  "tags": [
+    "marketplace",
+    "sre",
+    "unified",
+    "observability"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "catalog-service",
+          "value": "catalog-service"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|opensearch|blackbox-exporter|redis|kafka|postgres\"}, job)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Application / Service",
+        "multi": false,
+        "name": "service",
+        "options": [],
+        "query": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|opensearch|blackbox-exporter|redis|kafka|postgres\"}, job)",
+        "refresh": 0,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "*"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Log Level",
+        "multi": false,
+        "name": "level",
+        "options": [],
+        "query": "DEBUG,INFO,WARN,ERROR",
+        "skipUrlSync": false,
+        "type": "custom",
+        "valuesFormat": "csv"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "label": "Search Logs",
+        "name": "search",
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "label": "Correlation ID (trace_id)",
+        "name": "correlation_id",
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Marketplace - SRE Unified Application Dashboard"
 }
