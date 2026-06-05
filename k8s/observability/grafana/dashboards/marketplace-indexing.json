@@ -898,42 +898,82 @@
       "id": 300,
       "title": "Indexing Error Rate (%)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"indexing-service\", status=~\"2..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"indexing-service\"}[1m]))) * 100",
           "legendFormat": "Success (20x)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"indexing-service\", status=~\"4..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"indexing-service\"}[1m]))) * 100",
           "legendFormat": "Client Errors (4xx)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"indexing-service\", status=~\"5..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"indexing-service\"}[1m]))) * 100",
           "legendFormat": "Server Errors (5xx)"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
     },
     {
       "id": 301,
       "title": "Indexing Status Distribution (Total)",
       "type": "piechart",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 48 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(increase(http_server_requests_seconds_count{job=\"indexing-service\"}[$__range])) by (status)",
           "legendFormat": "Status: {{status}}"
         }
       ],
       "options": {
-        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
         "pieType": "donut",
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
       }
     }
   ],
@@ -948,7 +988,7 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},

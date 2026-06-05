@@ -25,21 +25,54 @@
       "id": 1,
       "title": "Cluster Health Status",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
       "targets": [
-        { "expr": "elasticsearch_cluster_health_status", "refId": "A" }
+        {
+          "expr": "elasticsearch_cluster_health_status",
+          "refId": "A"
+        }
       ],
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "options": { "0": { "color": "green", "index": 0, "text": "Green" }, "1": { "color": "yellow", "index": 1, "text": "Yellow" }, "2": { "color": "red", "index": 2, "text": "Red" } }, "type": "value" }
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Green"
+                },
+                "1": {
+                  "color": "yellow",
+                  "index": 1,
+                  "text": "Yellow"
+                },
+                "2": {
+                  "color": "red",
+                  "index": 2,
+                  "text": "Red"
+                }
+              },
+              "type": "value"
+            }
           ]
         }
       }
@@ -48,63 +81,130 @@
       "id": 2,
       "title": "Nodes Count",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 3, "x": 6, "y": 0 },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
       "targets": [
-        { "expr": "elasticsearch_cluster_health_number_of_nodes", "refId": "A" }
+        {
+          "expr": "elasticsearch_cluster_health_number_of_nodes",
+          "refId": "A"
+        }
       ],
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
       }
     },
     {
       "id": 3,
       "title": "Data Nodes",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 3, "x": 9, "y": 0 },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 9,
+        "y": 0
+      },
       "targets": [
-        { "expr": "elasticsearch_cluster_health_number_of_data_nodes", "refId": "A" }
+        {
+          "expr": "elasticsearch_cluster_health_number_of_data_nodes",
+          "refId": "A"
+        }
       ],
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
       }
     },
     {
       "id": 4,
       "title": "Up Time",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
       "targets": [
-        { "expr": "time() - elasticsearch_clusterinfo_last_retrieval_success_ts", "refId": "A" }
+        {
+          "expr": "time() - elasticsearch_clusterinfo_last_retrieval_success_ts",
+          "refId": "A"
+        }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s" }
+        "defaults": {
+          "unit": "s"
+        }
       },
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
       }
     },
     {
       "id": 5,
       "title": "Shards Overview",
       "type": "gauge",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
       "targets": [
-        { "expr": "elasticsearch_cluster_health_active_shards", "legendFormat": "Active", "refId": "A" },
-        { "expr": "elasticsearch_cluster_health_unassigned_shards", "legendFormat": "Unassigned", "refId": "B" },
-        { "expr": "elasticsearch_cluster_health_initializing_shards", "legendFormat": "Initializing", "refId": "C" }
+        {
+          "expr": "elasticsearch_cluster_health_active_shards",
+          "legendFormat": "Active",
+          "refId": "A"
+        },
+        {
+          "expr": "elasticsearch_cluster_health_unassigned_shards",
+          "legendFormat": "Unassigned",
+          "refId": "B"
+        },
+        {
+          "expr": "elasticsearch_cluster_health_initializing_shards",
+          "legendFormat": "Initializing",
+          "refId": "C"
+        }
       ],
       "options": {
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       }
@@ -113,48 +213,99 @@
       "id": 6,
       "title": "Pending Tasks",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
       "targets": [
-        { "expr": "elasticsearch_cluster_health_number_of_pending_tasks", "legendFormat": "Pending Tasks", "refId": "A" },
-        { "expr": "elasticsearch_cluster_health_number_of_in_flight_fetch", "legendFormat": "In-flight Fetches", "refId": "B" }
+        {
+          "expr": "elasticsearch_cluster_health_number_of_pending_tasks",
+          "legendFormat": "Pending Tasks",
+          "refId": "A"
+        },
+        {
+          "expr": "elasticsearch_cluster_health_number_of_in_flight_fetch",
+          "legendFormat": "In-flight Fetches",
+          "refId": "B"
+        }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "short" }
+        "defaults": {
+          "unit": "short"
+        }
       }
     },
     {
       "id": 7,
       "title": "Circuit Breakers (Bytes)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
       "targets": [
-        { "expr": "elasticsearch_breakers_estimated_size_bytes", "legendFormat": "Estimated: {{breaker}}", "refId": "A" },
-        { "expr": "elasticsearch_breakers_limit_size_bytes", "legendFormat": "Limit: {{breaker}}", "refId": "B" }
+        {
+          "expr": "elasticsearch_breakers_estimated_size_bytes",
+          "legendFormat": "Estimated: {{breaker}}",
+          "refId": "A"
+        },
+        {
+          "expr": "elasticsearch_breakers_limit_size_bytes",
+          "legendFormat": "Limit: {{breaker}}",
+          "refId": "B"
+        }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "decbytes" }
+        "defaults": {
+          "unit": "decbytes"
+        }
       }
     },
     {
       "id": 8,
       "title": "Breakers Tripped",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 22 },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
       "targets": [
-        { "expr": "sum(elasticsearch_breakers_tripped) by (breaker)", "legendFormat": "{{breaker}}", "refId": "A" }
+        {
+          "expr": "sum(elasticsearch_breakers_tripped) by (breaker)",
+          "legendFormat": "{{breaker}}",
+          "refId": "A"
+        }
       ],
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
       }
     }
   ],
   "refresh": "10s",
   "schemaVersion": 38,
-  "tags": ["opensearch", "infra"],
-  "time": { "from": "now-1h", "to": "now" },
+  "tags": [
+    "opensearch",
+    "infra"
+  ],
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
   "title": "OpenSearch - Cluster Health",
   "uid": "opensearch-health"
 }

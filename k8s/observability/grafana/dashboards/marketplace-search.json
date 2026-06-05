@@ -958,7 +958,10 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(resilience4j_circuitbreaker_state{name=\"mlRankingService\", state=\"open\"}) or vector(0)) * 1 + (sum(resilience4j_circuitbreaker_state{name=\"mlRankingService\", state=\"half_open\"}) or vector(0)) * 2",
           "legendFormat": "ML Ranking",
           "refId": "A"
@@ -1032,7 +1035,10 @@
       "pluginVersion": "12.3.1",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(resilience4j_circuitbreaker_state{name=\"embeddingService\", state=\"open\"}) or vector(0)) * 1 + (sum(resilience4j_circuitbreaker_state{name=\"embeddingService\", state=\"half_open\"}) or vector(0)) * 2",
           "legendFormat": "Embedding",
           "refId": "A"
@@ -1421,10 +1427,18 @@
       "id": 130,
       "title": "Search Service - Erros por Status (Total 1h)",
       "type": "stat",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 55 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 55
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(increase(http_server_requests_seconds_count{job=\"search-service\", status!~\"2..\"}[1h])) by (status)",
           "legendFormat": "Status {{status}}",
           "refId": "A"
@@ -1432,12 +1446,20 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
             ]
           }
         }
@@ -1447,57 +1469,109 @@
       "id": 131,
       "title": "Search Service - Taxa de Erros por Status (Timeline)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 55 },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 55
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(http_server_requests_seconds_count{job=\"search-service\", status!~\"2..\"}[1m])) by (status)",
           "legendFormat": "Status {{status}}",
           "refId": "A"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     },
     {
       "id": 400,
       "title": "Search Error Rate (%)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 64 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 64
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"search-service\", status=~\"2..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"search-service\"}[1m]))) * 100",
           "legendFormat": "Success (2xx)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"search-service\", status=~\"4..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"search-service\"}[1m]))) * 100",
           "legendFormat": "Client Errors (4xx)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"search-service\", status=~\"5..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"search-service\"}[1m]))) * 100",
           "legendFormat": "Server Errors (5xx)"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
     },
     {
       "id": 401,
       "title": "Search Status Distribution (Total)",
       "type": "piechart",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 72 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 72
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(increase(http_server_requests_seconds_count{job=\"search-service\"}[$__range])) by (status)",
           "legendFormat": "Status: {{status}}"
         }
       ],
       "options": {
-        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
         "pieType": "donut",
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
       }
     }
   ],
@@ -1512,7 +1586,7 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},

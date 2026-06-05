@@ -1,98 +1,173 @@
 {
   "title": "Marketplace Search System - Overview",
   "uid": "marketplace-overview",
-  "tags": ["marketplace", "overview"],
+  "tags": [
+    "marketplace",
+    "overview"
+  ],
   "timezone": "browser",
   "schemaVersion": 38,
   "version": 2,
   "refresh": "10s",
-  "time": { "from": "now-1h", "to": "now" },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
   "panels": [
     {
       "id": 1,
       "title": "API Gateway - Request Rate (req/s)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(api_gateway_http_requests_total[1m])) by (method)",
           "legendFormat": "{{method}}"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     },
     {
       "id": 2,
       "title": "API Gateway - Error Rate (5xx)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(api_gateway_http_errors_total{status_code=~\"5..\"}[1m]))",
           "legendFormat": "5xx errors/s"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(api_gateway_http_errors_total{status_code=~\"4..\"}[1m]))",
           "legendFormat": "4xx errors/s"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "fixed", "fixedColor": "red" } } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        }
+      }
     },
     {
       "id": 3,
       "title": "API Gateway - Latência P95 e P99",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "histogram_quantile(0.95, sum(rate(api_gateway_http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "P95"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "histogram_quantile(0.99, sum(rate(api_gateway_http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "P99"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "s" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
     },
     {
       "id": 4,
       "title": "Status dos Serviços",
       "type": "stat",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "up{job=\"api-gateway\"}",
           "legendFormat": "API Gateway"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "up{job=\"search-service\"}",
           "legendFormat": "Search Service"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "up{job=\"catalog-service\"}",
           "legendFormat": "Catalog Service"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "up{job=\"indexing-service\"}",
           "legendFormat": "Indexing Service"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "probe_success{instance=~\".*ml-ranking.*\"}",
           "legendFormat": "ML Ranking"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "probe_success{instance=~\".*ml-embedding.*\"}",
           "legendFormat": "ML Embedding"
         }
@@ -100,14 +175,42 @@
       "options": {
         "graphMode": "none",
         "colorMode": "background",
-        "reduceOptions": { "calcs": ["lastNotNull"] }
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
       },
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "UP",
+                  "color": "green"
+                }
+              }
+            }
           ],
-          "thresholds": { "mode": "absolute", "steps": [{ "value": 0, "color": "red" }, { "value": 1, "color": "green" }] }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "red"
+              },
+              {
+                "value": 1,
+                "color": "green"
+              }
+            ]
+          }
         }
       }
     },
@@ -115,35 +218,58 @@
       "id": 5,
       "title": "Quantidade de Pods por Aplicação",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(up{job=\"api-gateway\"}) or vector(0)",
           "legendFormat": "API Gateway"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(up{job=\"catalog-service\"}) or vector(0)",
           "legendFormat": "Catalog Service"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(up{job=\"indexing-service\"}) or vector(0)",
           "legendFormat": "Indexing Service"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(up{job=\"search-service\"}) or vector(0)",
           "legendFormat": "Search Service"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(up{job=\"ml-embedding-service\"}) or vector(0)",
           "legendFormat": "ML Embedding"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(up{job=\"ml-ranking-service\"}) or vector(0)",
           "legendFormat": "ML Ranking"
         }
@@ -159,7 +285,9 @@
       },
       "options": {
         "legend": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "right"
         }

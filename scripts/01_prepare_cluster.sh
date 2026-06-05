@@ -10,7 +10,7 @@ K8S_VERSION=v1.28.3
 IP=$(hostname -I | awk '{print $1}')
 
 echo "🚀 Iniciando Minikube com suporte a Registro Inseguro (host.minikube.internal:5001)..."
-minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION --apiserver-ips=$IP --insecure-registry="host.minikube.internal:5001"
+minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION --apiserver-ips=$IP --insecure-registry="host.minikube.internal:5001" 
 
 echo "✅ Habilitando MetalLB..."
 minikube addons enable metallb

@@ -1,119 +1,219 @@
 {
   "title": "Marketplace Search - Catalog Performance",
   "uid": "marketplace-catalog",
-  "tags": ["marketplace", "catalog"],
+  "tags": [
+    "marketplace",
+    "catalog"
+  ],
   "timezone": "browser",
   "schemaVersion": 38,
   "version": 1,
   "refresh": "10s",
-  "time": { "from": "now-1h", "to": "now" },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
   "panels": [
     {
       "id": 1,
       "title": "Catalog Operations Rate",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(catalog_product_operations_total[1m])) by (operation)",
           "legendFormat": "Op: {{operation}}"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     },
     {
       "id": 2,
       "title": "Database Write Latency (P95)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(catalog_db_operation_duration_seconds_sum{operation=\"save\"}[5m])) / sum(rate(catalog_db_operation_duration_seconds_count{operation=\"save\"}[5m]))",
           "legendFormat": "Avg Latency (save)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "max(catalog_db_operation_duration_seconds_max{operation=\"save\"})",
           "legendFormat": "Max Latency (save)"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "s" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
     },
     {
       "id": 3,
       "title": "Postgres Pool - Conexões Ativas",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(pg_stat_activity_count) by (datname)",
           "legendFormat": "DB: {{datname}}"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "short" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
     },
     {
       "id": 4,
       "title": "Distributed Lock Efficiency (Redis)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(catalog_product_lock_acquired_total[1m]))",
           "legendFormat": "Lock Acquired (Success)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(rate(catalog_product_lock_denied_total[1m]))",
           "legendFormat": "Lock Denied (Race Condition Prevented)"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     },
     {
       "id": 5,
       "title": "Catalog Error Rate (%)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"catalog-service\", status=~\"2..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"catalog-service\"}[1m]))) * 100",
           "legendFormat": "Success (2xx)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"catalog-service\", status=~\"4..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"catalog-service\"}[1m]))) * 100",
           "legendFormat": "Conflicts/Client Errors (4xx)"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"catalog-service\", status=~\"5..\"}[1m])) / sum(rate(http_server_requests_seconds_count{job=\"catalog-service\"}[1m]))) * 100",
           "legendFormat": "Server Errors (5xx)"
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
     },
     {
       "id": 6,
       "title": "HTTP Status Distribution (Total)",
       "type": "piechart",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(increase(http_server_requests_seconds_count{job=\"catalog-service\"}[$__range])) by (status)",
           "legendFormat": "Status: {{status}}"
         }
       ],
       "options": {
-        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
         "pieType": "donut",
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
       }
     }
   ]

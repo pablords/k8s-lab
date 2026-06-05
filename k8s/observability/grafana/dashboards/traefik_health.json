@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -22,57 +25,129 @@
       "id": 1,
       "title": "Requests by Entrypoint",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "targets": [
-        { "expr": "sum(rate(traefik_entrypoint_requests_total[1m])) by (entrypoint)", "legendFormat": "{{entrypoint}}", "refId": "A" }
+        {
+          "expr": "sum(rate(traefik_entrypoint_requests_total[1m])) by (entrypoint)",
+          "legendFormat": "{{entrypoint}}",
+          "refId": "A"
+        }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     },
     {
       "id": 2,
       "title": "Requests by Service",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "targets": [
-        { "expr": "sum(rate(traefik_service_requests_total[1m])) by (service)", "legendFormat": "{{service}}", "refId": "A" }
+        {
+          "expr": "sum(rate(traefik_service_requests_total[1m])) by (service)",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     },
     {
       "id": 3,
       "title": "Entrypoint Latency (P99)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
       "targets": [
-        { "expr": "histogram_quantile(0.99, sum(rate(traefik_entrypoint_request_duration_seconds_bucket[5m])) by (le, entrypoint))", "legendFormat": "{{entrypoint}}", "refId": "A" }
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(traefik_entrypoint_request_duration_seconds_bucket[5m])) by (le, entrypoint))",
+          "legendFormat": "{{entrypoint}}",
+          "refId": "A"
+        }
       ],
-      "fieldConfig": { "defaults": { "unit": "s" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
     },
     {
       "id": 4,
       "title": "Service Latency (P95)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
       "targets": [
-        { "expr": "histogram_quantile(0.95, sum(rate(traefik_service_request_duration_seconds_bucket[5m])) by (le, service))", "legendFormat": "{{service}}", "refId": "A" }
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(traefik_service_request_duration_seconds_bucket[5m])) by (le, service))",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
       ],
-      "fieldConfig": { "defaults": { "unit": "s" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
     },
     {
       "id": 5,
       "title": "Errors (4xx/5xx) by Service",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
       "targets": [
-        { "expr": "sum(rate(traefik_service_requests_total{code=~\"[45]..\"}[1m])) by (service, code)", "legendFormat": "{{service}} - {{code}}", "refId": "A" }
+        {
+          "expr": "sum(rate(traefik_service_requests_total{code=~\"[45]..\"}[1m])) by (service, code)",
+          "legendFormat": "{{service}} - {{code}}",
+          "refId": "A"
+        }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     }
   ],
   "refresh": "5s",
   "schemaVersion": 38,
-  "tags": ["traefik", "gateway", "infra"],
-  "time": { "from": "now-1h", "to": "now" },
+  "tags": [
+    "traefik",
+    "gateway",
+    "infra"
+  ],
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
   "title": "Traefik - Ingress Health",
   "uid": "traefik-health"
 }
