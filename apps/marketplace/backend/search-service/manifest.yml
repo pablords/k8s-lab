@@ -56,12 +56,10 @@ spec:
           value: "none"
         - name: OTEL_LOGS_EXPORTER
           value: "none"
-        - name: LOGGING_PATTERN_LEVEL
-          value: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
-        - name: LOGGING_PATTERN_CONSOLE
-          value: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr([%thread]){magenta} %clr(%-5level){blue} %clr([%X{trace_id:-},%X{span_id:-}]){faint} %clr(%logger{36}){cyan} - %msg%n"
-        - name: OTEL_HTTP_SERVER_EXCLUDED_PATHS
-          value: "/actuator/prometheus,/actuator/health"
+        - name: OTEL_INSTRUMENTATION_SERVLET_SUPPRESS_SPANS_FOR_PATHS
+          value: "/api/v1/actuator,/api/v1/actuator/*,/actuator,/actuator/*,/health,/metrics,/api/v1/health,/api/v1/metrics"
+        - name: OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDED_PATHS
+          value: "/api/v1/actuator,/api/v1/actuator/*,/actuator,/actuator/*,/health,/metrics,/api/v1/health,/api/v1/metrics"
         - name: LOG_LEVEL
           value: "INFO"
         - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_BOOT_ACTUATE_AUTOCONFIGURE_TRACING

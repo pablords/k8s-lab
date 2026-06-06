@@ -16,6 +16,7 @@
     ]
   },
   "editable": true,
+  "uid": "marketplace-sre-unified",
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "liveNow": false,
@@ -731,7 +732,7 @@
             "uid": "opensearch-logs"
           },
           "format": "logs",
-          "luceneQueryType": "RawDocument",
+          "luceneQueryType": "RawData",
           "metrics": [
             {
               "id": "1",
@@ -750,6 +751,29 @@
         }
       ],
       "title": "\ud83d\udcdd Integrated Application Log Stream",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "_id": true,
+              "_index": true,
+              "_score": true,
+              "_type": true,
+              "kubernetes": true,
+              "kubernetes.container_name": true
+            },
+            "indexByName": {
+              "@timestamp": 0,
+              "message": 1,
+              "environment": 2,
+              "trace_id": 3,
+              "span_id": 4
+            },
+            "renameByName": {}
+          }
+        }
+      ],
       "type": "table"
     },
     {

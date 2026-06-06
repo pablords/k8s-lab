@@ -22,6 +22,9 @@ processors:
     traces:
       span:
         - 'IsMatch(attributes["http.target"], ".*actuator.*")'
+        - 'IsMatch(attributes["url.path"], ".*actuator.*")'
+        - 'IsMatch(attributes["url.path"], ".*health.*")'
+        - 'IsMatch(attributes["url.path"], ".*metrics.*")'
         - 'attributes["db.system"] == "redis"'
         - 'name == "PING"'
         - 'name == "HELLO"'
