@@ -37,7 +37,7 @@ spec:
           - |
             HOSTNAME_FQDN="${HOSTNAME}.kafka-hs.kafka.svc.cluster.local"
             exec kafka-server-start.sh /opt/bitnami/kafka/config/server.properties \
-              --override broker.id=${HOSTNAME##*-} \
+            --override broker.id=${HOSTNAME##*-} \
               --override listeners=PLAINTEXT://:9092 \
               --override advertised.listeners=PLAINTEXT://${HOSTNAME_FQDN}:9092 \
               --override zookeeper.connect=zookeeper-hs:2181 \
@@ -45,7 +45,12 @@ spec:
               --override num.io.threads=8 \
               --override log.retention.hours=168 \
               --override log.segment.bytes=1073741824 \
-              --override log.retention.check.interval.ms=300000
+              --override log.retention.check.interval.ms=300000 \
+              --override num.partitions=3 \
+              --override default.replication.factor=3 \
+              --override offsets.topic.replication.factor=3 \
+              --override transaction.state.log.replication.factor=3 \
+              --override min.insync.replicas=2
           volumeMounts:
             - name: kafka-pvc
               mountPath: /bitnami/kafka

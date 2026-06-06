@@ -33,11 +33,11 @@ spec:
         - name: STATUS_STORAGE_TOPIC
           value: "connect_status"
         - name: CONFIG_STORAGE_REPLICATION_FACTOR
-          value: "1"
+          value: "3"
         - name: OFFSET_STORAGE_REPLICATION_FACTOR
-          value: "1"
+          value: "3"
         - name: STATUS_STORAGE_REPLICATION_FACTOR
-          value: "1"
+          value: "3"
         - name: CONNECT_BOOTSTRAP_SERVERS
           value: "kafka-0.kafka-hs.kafka.svc.cluster.local:9092,kafka-1.kafka-hs.kafka.svc.cluster.local:9092,kafka-2.kafka-hs.kafka.svc.cluster.local:9092"
         - name: CONNECT_REST_ADVERTISED_HOST_NAME
