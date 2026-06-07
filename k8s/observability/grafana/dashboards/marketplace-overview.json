@@ -170,6 +170,22 @@
           },
           "expr": "probe_success{instance=~\".*ml-embedding.*\"}",
           "legendFormat": "ML Embedding"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"kafka\"}",
+          "legendFormat": "Kafka"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"opensearch\"}",
+          "legendFormat": "OpenSearch"
         }
       ],
       "options": {
@@ -272,6 +288,22 @@
           },
           "expr": "sum(up{job=\"ml-ranking-service\"}) or vector(0)",
           "legendFormat": "ML Ranking"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(up{job=\"kafka\"}) or vector(0)",
+          "legendFormat": "Kafka"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(up{job=\"opensearch\"}) or vector(0)",
+          "legendFormat": "OpenSearch"
         }
       ],
       "fieldConfig": {

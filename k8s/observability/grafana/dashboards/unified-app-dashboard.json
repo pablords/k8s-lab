@@ -744,7 +744,7 @@
               "type": "raw_document"
             }
           ],
-          "query": "kubernetes.container_name:\"$service\"",
+          "query": "kubernetes.container_name:\"$service\" AND message:*$search* ${correlation_id:raw}",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "@timestamp"
@@ -1191,14 +1191,14 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|opensearch|blackbox-exporter|redis|kafka|postgres\"}, job)",
+        "definition": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|blackbox-exporter|redis|postgres|kafka|opensearch|traefik|ml-services-probe\"}, job)",
         "hide": 0,
         "includeAll": false,
         "label": "Application / Service",
         "multi": false,
         "name": "service",
         "options": [],
-        "query": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|opensearch|blackbox-exporter|redis|kafka|postgres\"}, job)",
+        "query": "label_values(up{job!~\"prometheus|cadvisor|node-exporter|blackbox-exporter|redis|postgres|kafka|opensearch|traefik|ml-services-probe\"}, job)",
         "refresh": 0,
         "regex": "",
         "regexApplyTo": "value",
@@ -1241,7 +1241,7 @@
           "value": ""
         },
         "hide": 0,
-        "label": "Correlation ID (trace_id)",
+        "label": "Trace ID (ex: trace_id:abc123)",
         "name": "correlation_id",
         "query": "",
         "skipUrlSync": false,
