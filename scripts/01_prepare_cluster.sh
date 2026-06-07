@@ -132,23 +132,34 @@ echo "🌍 Aplicando Gateway Istio..."
 kubectl apply -f k8s/config/istio/gateway.yml
 
 echo "📦 Enviando imagens locais para o repositório local (Host Registry)..."
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../marketplace-search-system" && pwd)"
+JAVA_COMPILED=false
+
+compile_java_services() {
+  if [ "$JAVA_COMPILED" = false ]; then
+    echo "☕ Compilando serviços Java com Maven..."
+    (cd "$SRC_DIR" && mvn clean package -DskipTests)
+    JAVA_COMPILED=true
+  fi
+}
+
 IMAGES=(
-  "marketplace/api-gateway:latest"
-  "marketplace/catalog-service:latest"
-  "marketplace/indexing-service:latest"
-  "marketplace/search-service:latest"
-  "marketplace/ml-ranking-service:latest"
-  "marketplace/ml-embedding-service:latest"
+  "pablords/api-gateway:latest"
+  "pablords/catalog-service:latest"
+  "pablords/indexing-service:latest"
+  "pablords/search-service:latest"
+  "pablords/ml-ranking-service:latest"
+  "pablords/ml-embedding-service:latest"
 )
 
 # Sincroniza as tags locais do docker-compose (ranking-service / embedding) com as do k8s (ml-ranking-service / ml-embedding-service)
-if docker image inspect marketplace/embedding:latest >/dev/null 2>&1; then
-  echo "🔗 Sincronizando tag local de marketplace/embedding para marketplace/ml-embedding-service..."
-  docker tag marketplace/embedding:latest marketplace/ml-embedding-service:latest
+if docker image inspect marketplace/embedding:latest >/dev/null 2>&1 && ! docker image inspect pablords/ml-embedding-service:latest >/dev/null 2>&1; then
+  echo "🔗 Sincronizando tag local de marketplace/embedding para pablords/ml-embedding-service..."
+  docker tag marketplace/embedding:latest pablords/ml-embedding-service:latest
 fi
-if docker image inspect marketplace/ranking-service:latest >/dev/null 2>&1; then
-  echo "🔗 Sincronizando tag local de marketplace/ranking-service para marketplace/ml-ranking-service..."
-  docker tag marketplace/ranking-service:latest marketplace/ml-ranking-service:latest
+if docker image inspect marketplace/ranking-service:latest >/dev/null 2>&1 && ! docker image inspect pablords/ml-ranking-service:latest >/dev/null 2>&1; then
+  echo "🔗 Sincronizando tag local de marketplace/ranking-service para pablords/ml-ranking-service..."
+  docker tag marketplace/ranking-service:latest pablords/ml-ranking-service:latest
 fi
 
 total_imgs=${#IMAGES[@]}
@@ -160,16 +171,45 @@ for img in "${IMAGES[@]}"; do
   
   echo "🔹 [$current_idx/$total_imgs] Processando $img..."
   
-  # Garante que a imagem local existe (ou tenta baixar do Hub como fallback)
+  # Garante que a imagem local existe (ou constrói localmente)
   if ! docker image inspect "$img" >/dev/null 2>&1; then
-    svc_name="${img#marketplace/}"
-    echo "   ⚠️ Imagem local $img não encontrada. Buscando 'pablords/$svc_name' no Docker Hub..."
-    if docker pull "pablords/$svc_name"; then
-      docker tag "pablords/$svc_name" "$img"
-    else
-      echo "   ❌ Falha ao baixar 'pablords/$svc_name' do Docker Hub. Pulando..."
-      continue
-    fi
+    svc_name="${img#pablords/}"
+    svc_name="${svc_name%:latest}"
+    echo "   ⚠️ Imagem local $img não encontrada. Iniciando build a partir do código fonte..."
+    
+    case "$svc_name" in
+      api-gateway)
+        echo "   🛠 Construindo Go api-gateway..."
+        docker build -t "$img" "$SRC_DIR/api-gateway"
+        ;;
+      catalog-service)
+        compile_java_services
+        echo "   🛠 Construindo Java catalog-service..."
+        docker build -t "$img" "$SRC_DIR/catalog-service"
+        ;;
+      indexing-service)
+        compile_java_services
+        echo "   🛠 Construindo Java indexing-service..."
+        docker build -t "$img" "$SRC_DIR/indexing-service"
+        ;;
+      search-service)
+        compile_java_services
+        echo "   🛠 Construindo Java search-service..."
+        docker build -t "$img" "$SRC_DIR/search-service"
+        ;;
+      ml-ranking-service)
+        echo "   🛠 Construindo Python ml-ranking-service..."
+        docker build -t "$img" "$SRC_DIR/ml-ranking-service"
+        ;;
+      ml-embedding-service)
+        echo "   🛠 Construindo Python ml-embedding-service..."
+        docker build -t "$img" "$SRC_DIR/ml-embedding-service"
+        ;;
+      *)
+        echo "   ❌ Serviço desconhecido: $svc_name"
+        continue
+        ;;
+    esac
   fi
   
   # Taggea para o registro local

@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: 192.168.49.5:5000/marketplace/api-gateway:latest
+        image: 192.168.49.5:5000/pablords/api-gateway:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -37,9 +37,9 @@ spec:
         - name: SEARCH_SERVICE_BASE_URL
           value: "http://search-service.marketplace.svc.cluster.local:8083/api/v1"
         - name: CATALOG_SERVICE_TIMEOUT
-          value: "2000"
+          value: "10000"
         - name: SEARCH_SERVICE_TIMEOUT
-          value: "3000"
+          value: "5000"
         - name: CATALOG_SERVICE_CB_FAILURE_RATE_THRESHOLD
           value: "30"
         - name: SEARCH_SERVICE_CB_FAILURE_RATE_THRESHOLD

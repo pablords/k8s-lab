@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: catalog-service
-        image: 192.168.49.5:5000/marketplace/catalog-service:latest
+        image: 192.168.49.5:5000/pablords/catalog-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
@@ -34,26 +34,38 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
+        
+        # 1. Parâmetro Exclusivo do Spring (Cluster multi-host com tuning de alta performance)
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://catalog-db-0.catalog-db.marketplace.svc.cluster.local:5432/catalog?reWriteBatchedInserts=true"
+
+        # 2. Parâmetros Atômicos do Banco (Lidos tanto para fallbacks quanto pelo Debezium)
         - name: DB_HOSTNAME
-          value: "catalog-db.marketplace.svc.cluster.local"
+          value: "catalog-db-0.catalog-db.marketplace.svc.cluster.local"
         - name: DB_HOSTNAME_CONTAINER
-          value: "catalog-db.marketplace.svc.cluster.local"
-        - name: DEBEZIUM_CONNECTOR_URL
-          value: "http://kafka-connect.marketplace.svc.cluster.local:8083/connectors"
-        - name: POSTGRES_TABLES
-          value: "public.products,public.product_metrics,public.brands,public.categories,public.sellers"
+          value: "catalog-db-0.catalog-db.marketplace.svc.cluster.local" # Fixo no Master para replicação lógica do WAL
         - name: POSTGRES_PORT
           value: "5432"
         - name: POSTGRES_USER
           value: "catalog"
         - name: POSTGRES_PASSWORD
           value: "catalog"
-        - name: POSTGRES_DB
+        
+        # 3. Nome puro do banco exigido pelo Debezium (Acaba com o Read timed out no Kafka Connect)
+        - name: DEBEZIUM_DB_NAME
           value: "catalog"
+
+        # 4. Integração com outros componentes da arquitetura
+        - name: DEBEZIUM_CONNECTOR_URL
+          value: "http://kafka-connect.marketplace.svc.cluster.local:8083/connectors"
+        - name: POSTGRES_TABLES
+          value: "public.products,public.product_metrics,public.brands,public.categories,public.sellers"
         - name: REDIS_HOST
           value: "redis.marketplace.svc.cluster.local"
         - name: REDIS_PORT
           value: "6379"
+        
+        # Observabilidade e Telemetria (OpenTelemetry)
         - name: OTEL_SERVICE_NAME
           value: "catalog-service"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -72,14 +84,7 @@ spec:
           value: "/api/v1/actuator,/api/v1/actuator/*,/actuator,/actuator/*,/health,/metrics,/api/v1/health,/api/v1/metrics"
         - name: OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDED_PATHS
           value: "/api/v1/actuator,/api/v1/actuator/*,/actuator,/actuator/*,/health,/metrics,/api/v1/health,/api/v1/metrics"
-        - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
-          value: "30"
-        - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
-          value: "5"
-        - name: SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT
-          value: "30000"
-        - name: SPRING_OUTPUT_ANSI_ENABLED
-          value: "NEVER"
+        
         startupProbe:
           httpGet:
             path: /api/v1/actuator/health

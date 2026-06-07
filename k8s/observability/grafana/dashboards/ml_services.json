@@ -457,7 +457,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
+        "w": 8,
         "x": 0,
         "y": 16
       },
@@ -489,7 +489,135 @@
           "refId": "A"
         }
       ],
-      "title": "Java ML: Feature Cache Hit Rate",
+      "title": "Java ML: Feature Cache Hit Rate (Overall)",
+      "type": "gauge"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 16
+      },
+      "id": 8,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(search_ml_features_l1_cache_total{status=\"hit\"}[5m])) or vector(0)) / (sum(rate(search_ml_features_l1_cache_total[5m])) or vector(1)) * 100",
+          "legendFormat": "L1 Hit Rate %",
+          "refId": "A"
+        }
+      ],
+      "title": "Java ML: L1 Cache Hit Rate (Caffeine)",
+      "type": "gauge"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 16
+      },
+      "id": 9,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(search_ml_features_l2_cache_total{status=\"hit\"}[5m])) or vector(0)) / (sum(rate(search_ml_features_l2_cache_total[5m])) or vector(1)) * 100",
+          "legendFormat": "L2 Hit Rate %",
+          "refId": "A"
+        }
+      ],
+      "title": "Java ML: L2 Cache Hit Rate (Redis)",
       "type": "gauge"
     },
     {
@@ -553,9 +681,9 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 18,
-        "x": 6,
-        "y": 16
+        "w": 24,
+        "x": 0,
+        "y": 22
       },
       "id": 7,
       "options": {

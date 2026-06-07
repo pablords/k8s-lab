@@ -1,11 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalog-db-config
+  namespace: marketplace
+data:
+  postgresql.conf: |
+    # Conexões e Processos
+    listen_addresses = '*'
+    max_connections = 100                 # Reduzido de 200 para 100 para economizar RAM por conexão
+    
+    # Memória otimizada para Container de 4GB Máximos
+    shared_buffers = 1GB                  # 25% do limite do container (4GB)
+    effective_cache_size = 3GB            # 75% do limite do container (4GB)
+    work_mem = 16MB                       # Reduzido para evitar sobreposição em queries simultâneas
+    maintenance_work_mem = 256MB
+    
+    # Write-Ahead Log (WAL) - Mantendo a eficiência de escrita
+    wal_level = logical
+    min_wal_size = 1GB
+    max_wal_size = 4GB
+    checkpoint_completion_target = 0.9
+    
+    # ATENÇÃO: Mantido desligado para alto throughput.
+    # Se o throughput de escrita for o seu maior gargalo, o 'off' ajuda muito,
+    # compensando o hardware mais enxuto.
+    synchronous_commit = off
+---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: catalog-db
   namespace: marketplace
   labels:
     app: catalog-db
 spec:
+  serviceName: "catalog-db"
   replicas: 1
   selector:
     matchLabels:
@@ -23,7 +52,7 @@ spec:
       - name: catalog-db
         image: postgres:15-alpine
         imagePullPolicy: IfNotPresent
-        args: ["-c", "wal_level=logical"]
+        args: ["-c", "config_file=/etc/postgresql/postgresql.conf"]
         env:
         - name: POSTGRES_USER
           value: "catalog"
@@ -33,13 +62,22 @@ spec:
           value: "catalog"
         ports:
         - containerPort: 5432
+        resources:
+          requests:
+            cpu: "500m"                   # Solicitando meio núcleo garantido
+            memory: 2Gi                   # Mínimo que o Postgres precisa para subir com segurança
+          limits:
+            cpu: "2"                      # Permite burst até 2 CPUs se o nó estiver ocioso
+            memory: 4Gi                   # Teto rígido para não derrubar o nó do K8s
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
+        - name: config-volume
+          mountPath: /etc/postgresql
         livenessProbe:
           exec:
             command: ["pg_isready", "-U", "catalog"]
-          initialDelaySeconds: 10
+          initialDelaySeconds: 15
           periodSeconds: 10
       - name: postgres-exporter
         image: prometheuscommunity/postgres-exporter:v0.15.0
@@ -50,9 +88,26 @@ spec:
         ports:
         - containerPort: 9187
           name: scrape
+        resources:
+          requests:
+            cpu: "100m"
+            memory: 128Mi
+          limits:
+            cpu: "200m"
+            memory: 256Mi
       volumes:
-      - name: postgres-data
-        emptyDir: {}
+      - name: config-volume
+        configMap:
+          name: catalog-db-config
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"             # Lembre-se de ajustar para o seu StorageClass SSD
+      resources:
+        requests:
+          storage: 50Gi
 ---
 apiVersion: v1
 kind: Service

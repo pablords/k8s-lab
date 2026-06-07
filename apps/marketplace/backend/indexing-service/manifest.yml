@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: indexing-service
-        image: 192.168.49.5:5000/marketplace/indexing-service:latest
+        image: 192.168.49.5:5000/pablords/indexing-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8082
