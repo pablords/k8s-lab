@@ -69,7 +69,11 @@
       "targets": [
         {
           "expr": "kafka_brokers",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "title": "Kafka Brokers",
@@ -123,7 +127,11 @@
       "targets": [
         {
           "expr": "count(kafka_topic_partitions)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "title": "Total Topics",
@@ -177,7 +185,11 @@
       "targets": [
         {
           "expr": "count(kafka_consumergroup_members)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "title": "Consumer Groups",
@@ -231,7 +243,11 @@
       "targets": [
         {
           "expr": "sum(kafka_topic_partition_under_replicated_partition)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "title": "Under Replicated Partitions",
@@ -289,7 +305,11 @@
       "targets": [
         {
           "expr": "sum(kafka_consumergroup_lag_sum)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "title": "Total Lag (Messages)",
@@ -378,7 +398,11 @@
         {
           "expr": "sum(kafka_consumergroup_lag) by (consumergroup)",
           "legendFormat": "Group: {{consumergroup}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "title": "Consumer Lag by Group",
@@ -467,7 +491,11 @@
         {
           "expr": "sum(rate(kafka_topic_partition_current_offset[1m])) by (topic)",
           "legendFormat": "Topic: {{topic}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "title": "Topic Offsets Rate (Messages/s)",

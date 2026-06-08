@@ -34,7 +34,11 @@
       "targets": [
         {
           "expr": "elasticsearch_cluster_health_status",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "options": {
@@ -90,7 +94,11 @@
       "targets": [
         {
           "expr": "elasticsearch_cluster_health_number_of_nodes",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "options": {
@@ -119,7 +127,11 @@
       "targets": [
         {
           "expr": "elasticsearch_cluster_health_number_of_data_nodes",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "options": {
@@ -148,7 +160,11 @@
       "targets": [
         {
           "expr": "time() - elasticsearch_clusterinfo_last_retrieval_success_ts",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -183,17 +199,29 @@
         {
           "expr": "elasticsearch_cluster_health_active_shards",
           "legendFormat": "Active",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "elasticsearch_cluster_health_unassigned_shards",
           "legendFormat": "Unassigned",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "elasticsearch_cluster_health_initializing_shards",
           "legendFormat": "Initializing",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "options": {
@@ -223,12 +251,20 @@
         {
           "expr": "elasticsearch_cluster_health_number_of_pending_tasks",
           "legendFormat": "Pending Tasks",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "elasticsearch_cluster_health_number_of_in_flight_fetch",
           "legendFormat": "In-flight Fetches",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -251,12 +287,20 @@
         {
           "expr": "elasticsearch_breakers_estimated_size_bytes",
           "legendFormat": "Estimated: {{breaker}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "elasticsearch_breakers_limit_size_bytes",
           "legendFormat": "Limit: {{breaker}}",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -279,7 +323,11 @@
         {
           "expr": "sum(elasticsearch_breakers_tripped) by (breaker)",
           "legendFormat": "{{breaker}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "options": {
