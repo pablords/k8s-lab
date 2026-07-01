@@ -14,6 +14,7 @@ minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=
 
 echo "✅ Habilitando MetalLB..."
 minikube addons enable metallb
+minikube addons enable metrics-server
 
 echo "⏳ Aguardando namespace metallb-system inicializar..."
 until kubectl get namespace metallb-system >/dev/null 2>&1; do

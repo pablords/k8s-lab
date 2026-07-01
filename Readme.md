@@ -105,3 +105,15 @@ O laboratório opera sob o paradigma de infraestrutura como código (IaC) e depl
    * Realize a alteração localmente no arquivo do manifesto correspondente.
    * Aplique a alteração diretamente no cluster usando `kubectl apply -f apps/marketplace/<caminho_da_app>/manifest.yml` ou executando o target `make deploy-marketplace`.
    * As atualizações serão implementadas e o Kubernetes executará o rolling update de forma transparente.
+
+---
+
+## 🔍 Resolução de Problemas e Capacidade
+
+* 🔧 Se você encontrar dificuldades durante o provisionamento do cluster Minikube, falhas de rede no registro local (`registry`), ou se os dashboards do Grafana estiverem sem dados ("No Data"), consulte o guia:
+  👉 **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**
+
+* 📈 Para entender o dimensionamento do banco PostgreSQL, gargalos identificados sob testes de estresse (ex: 1000 RPS) e planos de ajuste de capacidade da infraestrutura, consulte o guia:
+  👉 **[CAPACITY.md](CAPACITY.md)**
+
+

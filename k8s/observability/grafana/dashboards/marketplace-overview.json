@@ -216,7 +216,7 @@
     },
     {
       "id": 5,
-      "title": "Quantidade de Pods por Aplicação",
+      "title": "Quantidade de Pods Ativos por Aplicação",
       "type": "timeseries",
       "gridPos": {
         "h": 8,
@@ -230,7 +230,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(up{job=\"api-gateway\"}) or vector(0)",
+          "expr": "count(up{job=\"api-gateway-pods\"} == 1) or vector(0)",
           "legendFormat": "API Gateway"
         },
         {
@@ -238,7 +238,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(up{job=\"catalog-service\"}) or vector(0)",
+          "expr": "count(up{job=\"catalog-service-pods\"} == 1) or vector(0)",
           "legendFormat": "Catalog Service"
         },
         {
@@ -246,7 +246,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(up{job=\"indexing-service\"}) or vector(0)",
+          "expr": "count(up{job=\"indexing-service-pods\"} == 1) or vector(0)",
           "legendFormat": "Indexing Service"
         },
         {
@@ -254,7 +254,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(up{job=\"search-service\"}) or vector(0)",
+          "expr": "count(up{job=\"search-service-pods\"} == 1) or vector(0)",
           "legendFormat": "Search Service"
         },
         {
@@ -262,7 +262,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(up{job=\"ml-embedding-service\"}) or vector(0)",
+          "expr": "count(up{job=\"ml-embedding-service-pods\"} == 1) or vector(0)",
           "legendFormat": "ML Embedding"
         },
         {
@@ -270,7 +270,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(up{job=\"ml-ranking-service\"}) or vector(0)",
+          "expr": "count(up{job=\"ml-ranking-service-pods\"} == 1) or vector(0)",
           "legendFormat": "ML Ranking"
         }
       ],
@@ -280,7 +280,8 @@
             "drawStyle": "line",
             "lineInterpolation": "stepAfter"
           },
-          "decimals": 0
+          "decimals": 0,
+          "min": 0
         }
       },
       "options": {

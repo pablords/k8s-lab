@@ -119,3 +119,122 @@ scrape_configs:
   - job_name: 'cadvisor'
     static_configs:
       - targets: ['cadvisor.observability:8080']
+
+  # ---- Per-pod scraping (para contagem de réplicas) ----
+  # Descobre e scrape cada pod individualmente via Kubernetes SD.
+  # Isso expõe as labels `pod` e `instance` por réplica, permitindo
+  # que o dashboard de overview conte corretamente os pods ativos.
+
+  - job_name: 'pods-catalog-service'
+    metrics_path: '/api/v1/actuator/prometheus'
+    scrape_interval: 15s
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['marketplace']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: catalog-service
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_ip]
+        replacement: '${1}:8081'
+        target_label: __address__
+      - target_label: job
+        replacement: catalog-service-pods
+
+  - job_name: 'pods-search-service'
+    metrics_path: '/api/v1/actuator/prometheus'
+    scrape_interval: 15s
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['marketplace']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: search-service
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_ip]
+        replacement: '${1}:8083'
+        target_label: __address__
+      - target_label: job
+        replacement: search-service-pods
+
+  - job_name: 'pods-indexing-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['marketplace']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: indexing-service
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_ip]
+        replacement: '${1}:8082'
+        target_label: __address__
+      - target_label: job
+        replacement: indexing-service-pods
+
+  - job_name: 'pods-api-gateway'
+    metrics_path: '/api/v1/metrics'
+    scrape_interval: 15s
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['marketplace']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: api-gateway
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_ip]
+        replacement: '${1}:8080'
+        target_label: __address__
+      - target_label: job
+        replacement: api-gateway-pods
+
+  - job_name: 'pods-ml-ranking-service'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['marketplace']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: ml-ranking-service
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_ip]
+        replacement: '${1}:8084'
+        target_label: __address__
+      - target_label: job
+        replacement: ml-ranking-service-pods
+
+  - job_name: 'pods-ml-embedding-service'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['marketplace']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: ml-embedding-service
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_ip]
+        replacement: '${1}:8085'
+        target_label: __address__
+      - target_label: job
+        replacement: ml-embedding-service-pods
