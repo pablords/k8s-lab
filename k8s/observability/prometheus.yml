@@ -61,6 +61,8 @@ spec:
           - "--config.file=/etc/prometheus/prometheus.yml"
           - "--storage.tsdb.path=/prometheus"
           - "--storage.tsdb.retention.time=30d"
+          - "--web.enable-remote-write-receiver"   # Permite ingestão de métricas do k6
+
         ports:
         - containerPort: 9090
         volumeMounts:
@@ -81,8 +83,11 @@ metadata:
   name: prometheus
   namespace: observability
 spec:
+  type: NodePort
   selector:
     app: prometheus
   ports:
   - port: 9090
     targetPort: 9090
+    nodePort: 30090   # Acessível em http://$(minikube ip):30090
+

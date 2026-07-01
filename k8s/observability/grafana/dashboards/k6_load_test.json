@@ -1,0 +1,436 @@
+{
+  "title": "k6 - Load Test Results",
+  "uid": "k6-load-test",
+  "tags": ["k6", "load-test", "performance"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+
+    { "id": 100, "type": "row", "title": "📊 Overview", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
+
+    {
+      "id": 1, "title": "Virtual Users (VUs)", "type": "timeseries",
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 1 },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "k6_vus",
+        "legendFormat": "VUs Ativos"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short", "decimals": 0, "min": 0,
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 }
+        }
+      }
+    },
+
+    {
+      "id": 2, "title": "Throughput (req/s)", "type": "timeseries",
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 1 },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "rate(k6_http_reqs_total[30s])",
+        "legendFormat": "RPS"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps", "decimals": 1, "min": 0,
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2 }
+        }
+      }
+    },
+
+    {
+      "id": 3, "title": "Taxa de Erros HTTP (%)", "type": "timeseries",
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 1 },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "k6_http_req_failed_rate * 100",
+        "legendFormat": "% Erros"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "decimals": 2, "min": 0,
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 1 }]
+          }
+        }
+      }
+    },
+
+    {
+      "id": 4, "title": "Iterações Totais", "type": "stat",
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 1 },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "sum(k6_iterations_total)",
+        "legendFormat": "Iterações"
+      }],
+      "options": {
+        "colorMode": "value", "graphMode": "area", "justifyMode": "center",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } }
+    },
+
+    { "id": 101, "type": "row", "title": "⏱ Latência HTTP Global", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 } },
+
+    {
+      "id": 5, "title": "Latência HTTP — P50 / P95 / P99", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_http_req_duration{quantile=\"0.5\"}",
+          "legendFormat": "P50"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_http_req_duration{quantile=\"0.95\"}",
+          "legendFormat": "P95"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_http_req_duration{quantile=\"0.99\"}",
+          "legendFormat": "P99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms", "decimals": 0, "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right" }
+      }
+    },
+
+    {
+      "id": 6, "title": "Latência — Stats Gerais", "type": "stat",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 9 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_http_req_duration{quantile=\"0.5\"}",
+          "legendFormat": "P50 (mediana)"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_http_req_duration{quantile=\"0.95\"}",
+          "legendFormat": "P95"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_http_req_duration{quantile=\"0.99\"}",
+          "legendFormat": "P99"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_http_req_duration{quantile=\"1\"}",
+          "legendFormat": "MAX"
+        }
+      ],
+      "options": {
+        "colorMode": "value", "graphMode": "none", "justifyMode": "center",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms", "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 500 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        }
+      }
+    },
+
+    { "id": 102, "type": "row", "title": "🔍 Cenário: Busca Semântica (search_load)", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 } },
+
+    {
+      "id": 7, "title": "Latência de Busca — P50 / P95 / P99", "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_search_duration_ms{quantile=\"0.5\"}",
+          "legendFormat": "P50"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_search_duration_ms{quantile=\"0.95\"}",
+          "legendFormat": "P95"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_search_duration_ms{quantile=\"0.99\"}",
+          "legendFormat": "P99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "decimals": 0, "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2 } }
+      }
+    },
+
+    {
+      "id": 8, "title": "Buscas — Sucesso vs Erros (rate/30s)", "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(k6_search_successes_total_total[30s])",
+          "legendFormat": "✅ Sucessos/s"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(k6_search_errors_total_total[30s])",
+          "legendFormat": "❌ Erros/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "decimals": 1, "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2 } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "❌ Erros/s" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      }
+    },
+
+    { "id": 103, "type": "row", "title": "📦 Cenário: Criação de Produtos (catalog_write)", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 } },
+
+    {
+      "id": 9, "title": "Latência de Escrita — P50 / P95 / P99", "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 26 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_write_duration_ms{quantile=\"0.5\"}",
+          "legendFormat": "P50"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_write_duration_ms{quantile=\"0.95\"}",
+          "legendFormat": "P95"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_write_duration_ms{quantile=\"0.99\"}",
+          "legendFormat": "P99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "decimals": 0, "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2 } }
+      }
+    },
+
+    {
+      "id": 10, "title": "Escrita — Breakdown de Respostas", "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 26 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(k6_write_created_total_total[30s])",
+          "legendFormat": "✅ 201 Created/s"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(k6_write_conflicts_total_total[30s])",
+          "legendFormat": "🔁 409 Conflict/s (esperado)"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(k6_write_errors_total_total[30s])",
+          "legendFormat": "❌ Outros Erros/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "decimals": 1, "min": 0,
+          "custom": { "drawStyle": "bars", "fillOpacity": 60 } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "✅ 201 Created/s" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "🔁 409 Conflict/s (esperado)" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }] },
+          { "matcher": { "id": "byName", "options": "❌ Outros Erros/s" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      }
+    },
+
+    {
+      "id": 11, "title": "Total Acumulado — Escrita", "type": "stat",
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 33 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(k6_write_created_total_total)",
+          "legendFormat": "✅ Criados"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(k6_write_conflicts_total_total)",
+          "legendFormat": "🔁 Conflitos"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(k6_write_errors_total_total)",
+          "legendFormat": "❌ Erros"
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "none", "justifyMode": "center",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } }
+    },
+
+    { "id": 104, "type": "row", "title": "🔀 Cenário: Carga Mista — 80% Leitura / 20% Escrita (mixed_load)", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 38 } },
+
+    {
+      "id": 12, "title": "Latência Mista — Leitura vs Escrita P95", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 39 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_mixed_search_duration_ms{quantile=\"0.95\"}",
+          "legendFormat": "P95 Leitura"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_mixed_write_duration_ms{quantile=\"0.95\"}",
+          "legendFormat": "P95 Escrita"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_mixed_search_duration_ms{quantile=\"0.99\"}",
+          "legendFormat": "P99 Leitura"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_mixed_write_duration_ms{quantile=\"0.99\"}",
+          "legendFormat": "P99 Escrita"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "decimals": 0, "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2 } }
+      },
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right" }
+      }
+    },
+
+    {
+      "id": 13, "title": "Taxa de Erro Misto — Leitura vs Escrita", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 39 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_mixed_search_error_rate_rate",
+          "legendFormat": "Error Rate — Leitura"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "k6_mixed_write_error_rate_rate",
+          "legendFormat": "Error Rate — Escrita"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "decimals": 2, "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.03 }
+            ]
+          }
+        }
+      }
+    },
+
+    { "id": 105, "type": "row", "title": "🌐 Correlação com os Serviços do Cluster", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 47 } },
+
+    {
+      "id": 14, "title": "CPU dos Pods durante o Teste", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 48 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(rate(process_cpu_seconds_total{job=\"search-service\"}[1m])) * 100",
+          "legendFormat": "Search Service CPU %"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(rate(process_cpu_seconds_total{job=\"catalog-service\"}[1m])) * 100",
+          "legendFormat": "Catalog Service CPU %"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(rate(process_cpu_seconds_total{job=\"api-gateway\"}[1m])) * 100",
+          "legendFormat": "API Gateway CPU %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent", "decimals": 1, "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } }
+      }
+    },
+
+    {
+      "id": 15, "title": "Pods Ativos por Serviço (HPA Scale-out)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 48 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "count(up{job=\"search-service-pods\"} == 1) or vector(0)",
+          "legendFormat": "Search Service"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "count(up{job=\"catalog-service-pods\"} == 1) or vector(0)",
+          "legendFormat": "Catalog Service"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "count(up{job=\"api-gateway-pods\"} == 1) or vector(0)",
+          "legendFormat": "API Gateway"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "min": 0,
+          "custom": { "drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2 } }
+      }
+    }
+
+  ]
+}
