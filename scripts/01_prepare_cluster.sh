@@ -138,8 +138,8 @@ JAVA_COMPILED=false
 
 compile_java_services() {
   if [ "$JAVA_COMPILED" = false ]; then
-    echo "☕ Compilando serviços Java com Maven..."
-    (cd "$SRC_DIR" && mvn clean package -DskipTests)
+    echo "☕ Compilando serviços Java com Maven (via Docker + Java 25)..."
+    docker run --rm -v "$SRC_DIR":/app -v "$HOME/.m2":/root/.m2 -w /app maven:3.9-eclipse-temurin-21-alpine mvn clean package -DskipTests
     JAVA_COMPILED=true
   fi
 }
