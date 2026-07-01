@@ -34,6 +34,8 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
+        - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+          value: "50"
         
         # 1. Parâmetro Exclusivo do Spring (Cluster multi-host com tuning de alta performance)
         - name: SPRING_DATASOURCE_URL
@@ -87,20 +89,20 @@ spec:
         
         startupProbe:
           httpGet:
-            path: /api/v1/actuator/health
+            path: /api/v1/actuator/health/liveness
             port: 8081
           failureThreshold: 20
           periodSeconds: 10
         livenessProbe:
           httpGet:
-            path: /api/v1/actuator/health
+            path: /api/v1/actuator/health/liveness
             port: 8081
           initialDelaySeconds: 5
           periodSeconds: 30
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /api/v1/actuator/health
+            path: /api/v1/actuator/health/readiness
             port: 8081
           initialDelaySeconds: 0
           periodSeconds: 15

@@ -215,6 +215,32 @@
           ]
         }
       }
+    },
+    {
+      "id": 7,
+      "title": "Rejected Requests (Concurrency Limit / 429)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(catalog_product_operations_rejected_total{reason=\"concurrency_limit\"}[1m]))",
+          "legendFormat": "Rate of 429 Responses"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
     }
   ]
 }

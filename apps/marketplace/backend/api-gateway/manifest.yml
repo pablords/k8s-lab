@@ -21,7 +21,7 @@ spec:
       containers:
       - name: api-gateway
         image: 192.168.49.5:5000/pablords/api-gateway:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:

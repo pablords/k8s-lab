@@ -7,6 +7,9 @@ kubectl wait --for=condition=Ready pod --all -n observability --timeout=300s || 
 
 echo "🚀 Iniciando deploy da infraestrutura base e do Kafka..."
 kubectl apply -f apps/kafka/manifest.yml
+kubectl apply -f apps/marketplace/integration/kafka-exporter.yml
+kubectl apply -f k8s/observability/opensearch-exporter.yml
+
 
 echo "🚀 Iniciando deploy do ecossistema Marketplace (aplicando manifestos diretamente)..."
 kubectl apply -f apps/marketplace/namespace.yml

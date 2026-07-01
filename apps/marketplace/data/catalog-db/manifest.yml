@@ -7,7 +7,7 @@ data:
   postgresql.conf: |
     # Conexões e Processos
     listen_addresses = '*'
-    max_connections = 100                 # Reduzido de 200 para 100 para economizar RAM por conexão
+    max_connections = 250                 # Aumentado para 500 para suportar múltiplos pods
     
     # Memória otimizada para Container de 4GB Máximos
     shared_buffers = 1GB                  # 25% do limite do container (4GB)
