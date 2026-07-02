@@ -2,9 +2,9 @@
 set -e
 
 NODES=3
-CPUS=6
-MEMORY=24000
-DISK=30G
+CPUS=2
+MEMORY=8192
+DISK=20g
 DRIVER=docker
 K8S_VERSION=v1.28.3
 IP=$(hostname -I | awk '{print $1}')

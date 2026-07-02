@@ -35,25 +35,43 @@ spec:
           - sh
           - -c
           - |
+            # Memória reservada para a JVM (ajuste para 50-60% do "limits.memory" do seu Pod)
+            export KAFKA_HEAP_OPTS="-Xms1G -Xmx1G"
+            
+            # Otimizações do Garbage Collector para garantir baixíssima latência
+            export KAFKA_JVM_PERFORMANCE_OPTS="-XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35"
+            
+            # Monta o endereço de rede completo (FQDN) do pod baseado no DNS do Kubernetes
             HOSTNAME_FQDN="${HOSTNAME}.kafka-hs.kafka.svc.cluster.local"
+            # somente para dev auto.create.topics.enable=true
+            
+            # Comando de inicialização do Broker Kafka
             exec kafka-server-start.sh /opt/bitnami/kafka/config/server.properties \
-            --override broker.id=${HOSTNAME##*-} \
+              --override broker.id=${HOSTNAME##*-} \
               --override listeners=PLAINTEXT://:9092 \
               --override advertised.listeners=PLAINTEXT://${HOSTNAME_FQDN}:9092 \
               --override zookeeper.connect=zookeeper-hs:2181 \
-              --override num.network.threads=3 \
-              --override num.io.threads=8 \
+              --override num.network.threads=6 \
+              --override num.io.threads=16 \
               --override log.retention.hours=168 \
               --override log.segment.bytes=1073741824 \
               --override log.retention.check.interval.ms=300000 \
-              --override num.partitions=3 \
+              --override num.partitions=30 \
               --override default.replication.factor=3 \
               --override offsets.topic.replication.factor=3 \
               --override transaction.state.log.replication.factor=3 \
-              --override min.insync.replicas=2
+              --override auto.create.topics.enable=true \
+              --override min.insync.replicas=2 \
+              --override unclean.leader.election.enable=false
           volumeMounts:
             - name: kafka-pvc
               mountPath: /bitnami/kafka
+          resources:
+            requests:
+              cpu: 600m
+              memory: 1024Mi
+            limits:
+              memory: 2048Mi
   volumeClaimTemplates:
     - metadata:
         name: kafka-pvc
@@ -126,10 +144,20 @@ spec:
             - sh
             - -c
             - |
+              # so para teste em dev 
               rm -rf /bitnami/zookeeper/data/*
+              # --- Ajuste de Memória do ZooKeeper ---
+              # O ZooKeeper não precisa de muita memória. 1GB ou 2GB de Heap é mais que suficiente para um cluster médio/grande.
+              export JVMFLAGS="-Xms1G -Xmx1G -XX:+UseG1GC"
+              
+              # --- Configuração de Identidade (ID) ---
               POD_INDEX="${HOSTNAME##*-}"
               export ZOO_SERVER_ID=$((POD_INDEX + 1))
+              
+              # --- Descoberta do Quórum ---
               export ZOO_SERVERS="zookeeper-0.zookeeper-hs.kafka.svc.cluster.local:2888:3888 zookeeper-1.zookeeper-hs.kafka.svc.cluster.local:2888:3888 zookeeper-2.zookeeper-hs.kafka.svc.cluster.local:2888:3888"
+              
+              # --- Inicialização ---
               exec /entrypoint.sh /run.sh
           env:
             - name: ALLOW_ANONYMOUS_LOGIN
@@ -139,6 +167,13 @@ spec:
           volumeMounts:
             - name: zookeeper-pvc
               mountPath: /bitnami/zookeeper
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
   volumeClaimTemplates:
     - metadata:
         name: zookeeper-pvc

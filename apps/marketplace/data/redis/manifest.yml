@@ -26,8 +26,8 @@ spec:
         ports:
         - containerPort: 6379
         livenessProbe:
-          exec:
-            command: ["redis-cli", "ping"]
+          tcpSocket:
+            port: 6379
           initialDelaySeconds: 10
           periodSeconds: 10
       - name: redis-exporter

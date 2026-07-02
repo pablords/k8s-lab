@@ -14,7 +14,7 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8082"
-        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/path: "/api/v1/actuator/prometheus"
       labels:
         app: indexing-service
     spec:
@@ -68,6 +68,8 @@ spec:
           value: "INFO"
         - name: OTEL_INSTRUMENTATION_METHODS_INCLUDE
           value: "com.marketplace.search.indexing.application.usecases.IndexProductUseCase[execute];com.marketplace.search.indexing.application.services.ProductEnrichmentService[enrich];com.marketplace.search.indexing.application.services.ProductFeatureCalculationService[calculate];com.marketplace.search.indexing.domain.services.FeatureExtractor[extract]"
+        - name: KAFKA_DLQ_PARTITIONS
+          value: "30"
         startupProbe:
           httpGet:
             path: /actuator/health
