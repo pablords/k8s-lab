@@ -13,6 +13,7 @@ spec:
       labels:
         app: schema-registry
     spec:
+      enableServiceLinks: false
       containers:
         - name: schema-registry
           image: confluentinc/cp-schema-registry:7.5.0
@@ -27,7 +28,7 @@ spec:
               cpu: "500m"
           env:
             - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
-              value: PLAINTEXT://kafka-0.kafka-hs.kafka.svc.cluster.local:9092,kafka-1.kafka-hs.kafka.svc.cluster.local:9092,kafka-2.kafka-hs.kafka.svc.cluster.local:9092
+              value: kafka-0.kafka-hs.kafka.svc.cluster.local:9092,kafka-1.kafka-hs.kafka.svc.cluster.local:9092,kafka-2.kafka-hs.kafka.svc.cluster.local:9092
             - name: SCHEMA_REGISTRY_HOST_NAME
               value: schema-registry
             - name: SCHEMA_REGISTRY_LISTENERS
@@ -38,8 +39,7 @@ spec:
               value: PLAINTEXT
             - name: SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL
               value: INFO
-          command: ["bash"]
-          args: ["-c", "schema-registry-start /etc/schema-registry/schema-registry.properties"]
+
 
 ---
 apiVersion: v1
