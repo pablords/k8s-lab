@@ -20,22 +20,24 @@ spec:
     spec:
       containers:
       - name: catalog-service
-        image: 192.168.49.5:5000/pablords/catalog-service:latest
+        image: registry:5000/pablords/catalog-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
         resources:
           requests:
-            cpu: 200m
-            memory: 512Mi
+            cpu: 300m
+            memory: 256Mi
           limits:
-            cpu: 1000m
-            memory: 1024Mi
+            cpu: 600m
+            memory: 512Mi
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-0.kafka-hs.kafka.svc.cluster.local:9092,kafka-1.kafka-hs.kafka.svc.cluster.local:9092,kafka-2.kafka-hs.kafka.svc.cluster.local:9092"
         - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
-          value: "50"
+          value: "5"
         
         # 1. Parâmetro Exclusivo do Spring (Cluster multi-host com tuning de alta performance)
         - name: SPRING_DATASOURCE_URL
@@ -131,7 +133,7 @@ spec:
     kind: Deployment
     name: catalog-service
   minReplicas: 2
-  maxReplicas: 5
+  maxReplicas: 10
   metrics:
   - type: Resource
     resource:

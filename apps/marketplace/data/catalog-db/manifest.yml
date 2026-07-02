@@ -7,7 +7,7 @@ data:
   postgresql.conf: |
     # Conexões e Processos
     listen_addresses = '*'
-    max_connections = 250                 # Aumentado para 500 para suportar múltiplos pods
+    max_connections = 50   
     
     # Memória otimizada para Container de 4GB Máximos
     shared_buffers = 1GB                  # 25% do limite do container (4GB)
@@ -68,7 +68,7 @@ spec:
             memory: 2Gi                   # Mínimo que o Postgres precisa para subir com segurança
           limits:
             cpu: "2"                      # Permite burst até 2 CPUs se o nó estiver ocioso
-            memory: 4Gi                   # Teto rígido para não derrubar o nó do K8s
+            memory: 3Gi                   # Teto rígido para não derrubar o nó do K8s
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data

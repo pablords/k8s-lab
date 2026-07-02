@@ -21,7 +21,7 @@ spec:
       nodeName: minikube
       containers:
       - name: ml-embedding-service
-        image: 192.168.49.5:5000/pablords/ml-embedding-service:latest
+        image: registry:5000/pablords/ml-embedding-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8085

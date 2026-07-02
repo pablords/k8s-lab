@@ -668,7 +668,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "process_resident_memory_bytes{job=\"$service\"} / (1024 * 1024)",
+          "expr": "(process_resident_memory_bytes{job=\"$service\"} or sum by (instance, job) (jvm_memory_used_bytes{job=\"$service\"})) / (1024 * 1024)",
           "legendFormat": "Process Memory Usage (MiB)",
           "refId": "B"
         }

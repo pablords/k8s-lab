@@ -20,17 +20,17 @@ spec:
     spec:
       containers:
       - name: indexing-service
-        image: 192.168.49.5:5000/pablords/indexing-service:latest
+        image: registry:5000/pablords/indexing-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8082
         resources:
           requests:
             cpu: 200m
-            memory: 512Mi
+            memory: 256Mi
           limits:
-            cpu: 1000m
-            memory: 1024Mi
+            cpu: 500m
+            memory: 512Mi
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
@@ -115,7 +115,7 @@ spec:
     kind: Deployment
     name: indexing-service
   minReplicas: 2
-  maxReplicas: 5
+  maxReplicas: 10
   metrics:
   - type: Resource
     resource:

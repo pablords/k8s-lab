@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: search-service
-        image: 192.168.49.5:5000/pablords/search-service:latest
+        image: registry:5000/pablords/search-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8083

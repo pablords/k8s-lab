@@ -9,8 +9,8 @@ DRIVER=docker
 K8S_VERSION=v1.28.3
 IP=$(hostname -I | awk '{print $1}')
 
-echo "🚀 Iniciando Minikube com suporte a Registro Inseguro (host.minikube.internal:5001)..."
-minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION --apiserver-ips=$IP --insecure-registry="host.minikube.internal:5001" 
+echo "🚀 Iniciando Minikube com suporte a Registro Inseguro (host.minikube.internal:5001, registry:5000)..."
+minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION --apiserver-ips=$IP --insecure-registry="host.minikube.internal:5001,registry:5000" 
 
 echo "✅ Habilitando MetalLB..."
 minikube addons enable metallb
@@ -72,7 +72,7 @@ if [ -z "$REGISTRY_IP" ]; then
   echo "⚠️  Não foi possível obter o IP do registry na rede minikube. Pulando configuração dos nós."
 else
   echo "✅ Registry acessível em $REGISTRY_IP:5000 na rede minikube."
-  DOCKER_EXEC_START="/usr/bin/dockerd -H tcp://0.0.0.0:2376 -H unix:///var/run/docker.sock --default-ulimit=nofile=1048576:1048576 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem --label provider=docker --insecure-registry 10.96.0.0/12 --insecure-registry host.minikube.internal:5001 --insecure-registry ${REGISTRY_IP}:5000"
+  DOCKER_EXEC_START="/usr/bin/dockerd -H tcp://0.0.0.0:2376 -H unix:///var/run/docker.sock --default-ulimit=nofile=1048576:1048576 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem --label provider=docker --insecure-registry 10.96.0.0/12 --insecure-registry host.minikube.internal:5001 --insecure-registry registry:5000 --insecure-registry ${REGISTRY_IP}:5000"
 
   for node in minikube minikube-m02 minikube-m03; do
     echo "   🔹 Configurando insecure-registry em $node..."
