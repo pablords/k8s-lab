@@ -68,7 +68,7 @@ spec:
               mountPath: /bitnami/kafka
           resources:
             requests:
-              cpu: 600m
+              cpu: 800m
               memory: 1024Mi
             limits:
               memory: 2048Mi

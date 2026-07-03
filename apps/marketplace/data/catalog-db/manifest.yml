@@ -7,7 +7,7 @@ data:
   postgresql.conf: |
     # Conexões e Processos
     listen_addresses = '*'
-    max_connections = 200   
+    max_connections = 50   
     
     # Memória otimizada para Container de 4GB Máximos
     shared_buffers = 1GB                  # 25% do limite do container (4GB)

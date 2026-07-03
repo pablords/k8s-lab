@@ -26,11 +26,10 @@ spec:
         - containerPort: 8081
         resources:
           requests:
-            cpu: 300m
-            memory: 256Mi
-          limits:
-            cpu: 600m
+            cpu: 400m
             memory: 512Mi
+          limits:
+            memory: 1024Mi
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "production"
@@ -88,6 +87,8 @@ spec:
           value: "/api/v1/actuator,/api/v1/actuator/*,/actuator,/actuator/*,/health,/metrics,/api/v1/health,/api/v1/metrics"
         - name: OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDED_PATHS
           value: "/api/v1/actuator,/api/v1/actuator/*,/actuator,/actuator/*,/health,/metrics,/api/v1/health,/api/v1/metrics"
+        - name: CONCURRENCY_LIMIT
+          value: "100"
         
         startupProbe:
           httpGet:
@@ -133,7 +134,7 @@ spec:
     kind: Deployment
     name: catalog-service
   minReplicas: 2
-  maxReplicas: 10
+  maxReplicas: 6
   metrics:
   - type: Resource
     resource:
