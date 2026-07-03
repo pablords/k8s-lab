@@ -975,6 +975,71 @@
           ]
         }
       }
+    },
+    {
+      "id": 400,
+      "title": "L1 Cache - Hit Ratio (%)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 56
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(l1_cache_requests_total{result=\"hit\"}[1m])) by (cache) / sum(rate(l1_cache_requests_total[1m])) by (cache)) * 100",
+          "legendFormat": "{{cache}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 401,
+      "title": "L1 Cache - Size & Evictions",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 56
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "l1_cache_size",
+          "legendFormat": "Size - {{cache}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(l1_cache_evictions_total[1m])) by (cache)",
+          "legendFormat": "Evictions/s - {{cache}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
     }
   ],
   "preload": false,
