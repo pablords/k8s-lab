@@ -9,6 +9,12 @@ DRIVER=docker
 K8S_VERSION=v1.28.3
 IP=$(hostname -I | awk '{print $1}')
 
+if docker network inspect minikube >/dev/null 2>&1; then
+  echo "🧹 Limpando conexões antigas na rede minikube para evitar conflitos de IP..."
+  docker network disconnect -f minikube registry >/dev/null 2>&1 || true
+  docker network rm minikube >/dev/null 2>&1 || true
+fi
+
 echo "🚀 Iniciando Minikube com suporte a Registro Inseguro (host.minikube.internal:5001, registry:5000)..."
 minikube start --mount --nodes=$NODES --cpus=$CPUS --memory=$MEMORY --disk-size=$DISK --driver=$DRIVER --kubernetes-version=$K8S_VERSION --apiserver-ips=$IP --insecure-registry="host.minikube.internal:5001,registry:5000" 
 

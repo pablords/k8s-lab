@@ -27,6 +27,8 @@ deploy-marketplace:
 delete:
 	@echo "🗑️  Deletando todos os recursos do cluster"
 	minikube delete --all
+	docker network disconnect -f minikube registry >/dev/null 2>&1 || true
+	docker network rm minikube >/dev/null 2>&1 || true
 
 dashboard:
 	@echo "📊 Abrindo o Minikube Dashboard (ou exibindo o link)..."
